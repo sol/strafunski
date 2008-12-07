@@ -10,7 +10,7 @@ include ${StrategyLib}/scripts/makerules.opts
 include ${StrategyLib}/scripts/makerules.drift
 
 # We need some additional options
-GHCOPTS += ${ghc-opts} -package util -i${haterm}/library:${StrategyLib}/examples/haskell:
+GHCOPTS += ${ghc-opts} -i${haterm}/library:${StrategyLib}/examples/haskell:
 
 # Don't lose tables or generated Haskell files after make finishes
 .PRECIOUS: *.tbl *.hs
