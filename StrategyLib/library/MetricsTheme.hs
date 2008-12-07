@@ -10,6 +10,10 @@
 
 ------------------------------------------------------------------------------
 
+{-# OPTIONS -fglasgow-exts #-}
+{-# OPTIONS -fallow-overlapping-instances #-}
+{-# OPTIONS -fallow-overlapping-instances #-}
+
 module MetricsTheme where
 
 import Control.Monad
@@ -64,6 +68,7 @@ instance Monoid Metrics where
 -- * Strategy combinators for metrics
 
 -- | Additionally collect type-based metrics.
+{-
 typeMetric 
   :: (MonadPlus m, Term a)
   => TU Metrics m 	   -- ^ Metric collecting strategy
@@ -74,10 +79,10 @@ typeMetric s (key,g)
           (tryTU (ifthenTU (voidTU (typeFilterTU g))
 			   (constTU (incMetrics1 key initMetrics0)))) 
           (tryTU s)
-
+-}
 
 -- | Additionally collect predicate-based metrics.
-predMetric 
+{- predMetric 
   :: (MonadPlus m, Term b) 
   => TU Metrics m 	    -- ^ Strategy that collects metrics
   -> (MetricName,b -> m ()) -- ^ Name of the metric, and predicate
@@ -87,7 +92,7 @@ predMetric s (key,g)
           (tryTU (ifthenTU (monoTU g)
                            (constTU (incMetrics1 key initMetrics0))))
           (tryTU s)
-
+-}
 ------------------------------------------------------------------------------
 -- * Generic metric algorithms
 
