@@ -8,8 +8,6 @@ haskell-path = ${StrategyLib}/library:${StrategyLib}/models/${Model}:
 ghc-opts =	-fglasgow-exts				\
 		-fallow-overlapping-instances		\
 		-fallow-undecidable-instances		\
-	        -package data				\
-	        -package lang \
 		-i${haskell-path}
 
 hugs-opts =	-98 					\
