@@ -1,0 +1,6 @@
+###############################################################################
+#
+# These are the options that will do for the examples in the distribution.
+#
+
+ghc-opts = -fallow-overlapping-instances

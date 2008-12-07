@@ -1,0 +1,68 @@
+Release 1.2 of the Haskell ATerm Library is now available from:
+
+  http://www.cwi.nl/projects/MetaEnv/haterm/
+
+This package provides support for ATerms in Haskell. Currently this
+includes the following:
+
+  * Representation of ATerms (no sharing).
+  * Reading and writing ATerms to/from Strings, either in plain
+    textual format (TXT), or in maximally shared textual format (TAF).
+  * Conversion betweens ATerms and user types.
+
+To enable the latter feature, you need to provide instances of the
+ATermConvertible class for all the datatypes that you want to convert
+to/from ATerms. Automatic generation of instances is supported by the 
+DrIFT-Strafunski pre-compiler (version 1.4 and upward), which is 
+available from:
+
+  http://www.cs.vu.nl/Strafunski/
+
+(We hope that soon jDrIFT will make this version of DrIFT redundant.)
+For details on how to use and install these packages, see the README
+and example files in the respective distributions.
+
+ATerms
+------
+
+  The ATerms provide a generic format for representation and exchange
+  of (annotated) terms.
+
+  The ATerm Library (http://www.cwi.nl/projects/MetaEnv/aterm/)
+  provides implementations of the ATerm Library in C and Java,
+  including numerous ATerm command line utilities implemented in C.
+
+  ATerms were developed in the context of the ASF+SDF
+  Meta-Environment. They are also used by the rewriting language
+  Stratego, by the transformation tool bundle XT, by the visitor
+  generator JJForester, and by numerous other tools developed at CWI,
+  Universiteit Utrecht, and elsewhere.
+
+Contributions
+-------------
+
+  The Haskell ATerm Library was initiated by Joost Visser.
+  Improvement were contributed by Klaus Luettich.
+
+Links
+-----
+
+  Strafunski
+    http://www.cs.vu.nl/Strafunski/
+
+  ATerm Library for C and Java
+    http://www.cwi.nl/projects/MetaEnv/aterm/
+
+  ATerm Library for Java (alternative implementation)
+    http://www.loria.fr/equipes/protheo/SOFTWARES/ELAN/Toolkit/
+
+  XT (transformation tool bundle)
+    http://www.program-transformation.org/xt/
+
+  Stratego
+    http://www.stratego-language.org/
+
+  JJForester
+    http://www.jjforester.org/
+
+

@@ -1,0 +1,10 @@
+###############################################################################
+#
+# Check targets that recurse
+#
+
+check-ghci:
+	${MAKE} recurse target=check-ghci
+
+check-ghc:
+	${MAKE} recurse target=check-ghc

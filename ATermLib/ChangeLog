@@ -1,0 +1,28 @@
+November 2005: Joost Visser
+  * Bumped version to 1.5.
+  * Upgraded to work with GHC 6.4.1.
+
+2004-12-21: Joost.Visser@di.uminho.pt
+  * Bumped version to 1.4.
+  * Improved haddock documentation
+  * Fixed subtle of-by-1-bug that led to sporadic TAF encoding 
+    and decoding errors in big files.
+  * Fixed de-hyphenation problem.
+
+2004-06-09 Joost.Visser@di.uminho.pt
+  * Moved to sourceforge repository
+  * Simplified build process
+
+2002-06-27 Joost.Visser@cwi.nl
+  * Removed bug in atermIOwrap concerning -o option
+
+2002-04-02 Joost.Visser@cwi.nl
+  * Accomodated contributions by Klaus LŸttich.
+  * Using reversed lists and finite maps as aterm tables during
+	reading and writing of TAF format.
+  * Added some rudimentary benchmarking support.
+  * Added wrapper functions to handle typical command line options
+ 	for aterm tools.
+
+2002-03-07 Joost.Visser@cwi.nl
+  * Initiated package.
