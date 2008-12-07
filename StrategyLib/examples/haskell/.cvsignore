@@ -1,7 +1,0 @@
-*.hi
-*.o
-*.log
-*_out.hs
-HsTransform
-HsExtract
-out
