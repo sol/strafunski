@@ -1,0 +1,23 @@
+<!DOCTYPE javaMetrics [
+
+<!ELEMENT javaMetrics (cuMetric*) >
+
+<!ELEMENT cuMetric (interfaceMetric | classMetric)* >
+    <!ATTLIST cuMetric name CDATA #REQUIRED>
+
+<!ELEMENT interfaceMetric EMPTY >
+    <!ATTLIST interfaceMetric name        CDATA #REQUIRED
+                              methodCount CDATA #REQUIRED
+                              fieldCount  CDATA #REQUIRED>
+
+<!ELEMENT classMetric (methodMetric | classMetric)* >
+    <!ATTLIST classMetric name       CDATA #REQUIRED
+                          fieldCount CDATA #REQUIRED>
+
+<!ELEMENT methodMetric (classMetric)* >
+    <!ATTLIST methodMetric name           CDATA #REQUIRED
+                           statementCount CDATA #REQUIRED
+                           mcCabe         CDATA #REQUIRED
+                           nestingDepth   CDATA #REQUIRED>
+
+]>

@@ -1,0 +1,9 @@
+<javaMetrics
+  ><cuMetric name="NoName"
+    ><classMetric name="Hello" fieldCount="1"
+      ><methodMetric name="getA" statementCount="1" mcCabe="0"
+                     nestingDepth="0"/></classMetric></cuMetric
+  ><cuMetric name="NoName"
+    ><classMetric name="Hoi" fieldCount="0"
+      ><methodMetric name="m" statementCount="6" mcCabe="2"
+                     nestingDepth="2"/></classMetric></cuMetric></javaMetrics>

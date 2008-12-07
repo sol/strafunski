@@ -1,0 +1,11 @@
+Makefile
+Makefile.in
+*.o
+*.hi
+*.asfix
+*.af
+Sdf.hs
+*.tbl
+Sdf2Haskell
+SdfCoverage
+Configuration.hs

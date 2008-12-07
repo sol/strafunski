@@ -1,0 +1,16 @@
+digraph pcg {
+"NO PACKAGE" [ shape=box, style=filled, color=tan ]
+"testpackage" [ shape=box, style=filled, color=tan ]
+"NO PACKAGE.Hoi" -> "testpackage" [ color=blue, arrowsize=0.5 ]
+"testpackage.World" [ shape=box, color=green ]
+"NO PACKAGE.Hoi" -> "testpackage.World" [ color=blue, arrowsize=0.5 ]
+"NO PACKAGE.Hoi" [ shape=box, color=green ]
+"NO PACKAGE" -> "NO PACKAGE.Hoi"
+"Hello" -> "NO PACKAGE.Hoi" [ dir=back ]
+"Hello" [ shape=box, color=green ]
+"NO PACKAGE.Hoi" -> "Y" [ color=blue, arrowsize=0.5 ]
+"NO PACKAGE.Hoi" -> "X" [ color=blue, arrowsize=0.5 ]
+"NO PACKAGE.Hoi" -> "Z" [ color=blue, arrowsize=0.5 ]
+"NO PACKAGE.Hoi" -> "Aap" [ color=blue, arrowsize=0.5 ]
+}
+

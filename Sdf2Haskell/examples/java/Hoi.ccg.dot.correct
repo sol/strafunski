@@ -1,0 +1,9 @@
+digraph ccg {
+Hoi [ shape=box ]
+Hoi -> m
+__0 [shape=record,label="{ if |{ <true> true }}",size=.125,color=brown]
+m -> __0
+__1 [shape=record,label="{ if |{ <true> true }}",size=.125,color=brown]
+__0:true -> __1
+}
+

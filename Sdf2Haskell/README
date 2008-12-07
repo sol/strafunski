@@ -1,0 +1,120 @@
+------------------------------------------------------------------------------
+
+              GENERATION OF HASKELL DATATYPES FROM SDF GRAMMARS
+
+                   Sdf2Haskell version 1.0, November 2002
+
+                   Ralf Laemmel                Joost Visser
+               CWI & VU, Amsterdam            CWI, Amsterdam
+
+This package contains Sdf2Haskell, a generator that takes an SDF
+grammar as input and produces a corresponding set of Haskell datatype
+definitions as output.
+
+
+--- GENERAL ------------------------------------------------------------------
+
+For information see:
+
+  http://www.cs.vu.nl/Strafunski
+
+Contents of this package:
+
+  - generator	Directory with the files that make up the generator
+  - examples	Directory with examples of using the generator
+  - scripts     Directory with sets of reusable make rules
+
+
+--- PREREQUISITES ------------------------------------------------------------
+
+Prerequisites:
+
+ I. Your path must contain the following programs:
+ 
+   - GHC (version 6.4 or higher)
+   - DrIFT (version 2.1.2)
+   - sdf2table (version 1.10)
+   - sglr (version 3.4.1 or higher)
+   - implodePT (version 1.1 is known to work)
+   
+ II. The following Strafunski packages must be available:
+ 
+   - StrategyLib-5.0
+   - haterm-1.5
+   
+   Preferably, these packages should be placed in the same directory
+   as this Sdf2Haskell package.
+   
+
+GHC and DrIFT can easily be found via the Haskell organization home
+page at: http://www.haskell.org/.
+
+The programs sdf2haskell, sglr, and implodePT can be obtained in various
+ways:
+   
+   - by installing the "sdf2" package from the Online Package Base at
+     http://www.program-transformation.org/package-base/ (source
+     distribution only).
+   
+   - by installing StrategoXT's prerequisite package "sdf2-bundle"
+     from http://www.stratego-language.org/ (source and bindary
+     distributions available).
+     
+   - by installing the ASF+SDF Meta-Environment, which can be obtained
+     as "asfsdf-meta" from http://www.cwi.nl/projects/MetaEnv/
+
+The required Strafunski packages can be downloaded from the
+Strafunfski home page http://www.cs.vu.nl/Strafunski/.
+
+
+--- INSTALL ------------------------------------------------------------------
+
+The Sdf2Haskell generator can be configured, built, and installed IN PLACE,
+as follows:
+
+  ./configure [flags]
+  gmake
+  
+For help on the configuration flags, type:
+
+  ./configure --help
+
+In particular, you might want to use the --with-haterm and --with-StrategyLib
+flags to point out where the required Strafunksi packages are.  
+
+
+--- RUN ----------------------------------------------------------------------
+  
+After configuration and builing, the Sdf2Haskell generator is available in:
+
+  ./generator/Sdf2Haskell
+  
+You may want to extend your PATH to include ./generator.
+
+You can now run the generator as follows:
+
+  sdf2haskell -i <grammarfile> -m <modulename> -o <haskellfile>
+  
+where the <grammarfile> is a file containing the SDF grammar you want to feed
+to the generator as input, <modulename> is the name of the Haskell module
+you want to be generated, and <haskellfile> is the name of the file into which
+you want the generated Haskell file to be written. Use the -p option if you
+want to generate customizable pretty-print functions instead of datatypes
+that represent abstract syntax trees.
+
+
+--- EXAMPLES -----------------------------------------------------------------
+
+To see the examples in action, you can type:
+
+  gmake check
+
+Do this in the top level directory to run all examples, or in a
+specific example directory to run a single one. The example in
+examples/twosorts is the most simple one which only invokes the
+generator. The other examples (for Java and Cobol) also involve
+compilation of code depending on the generated Haskell datatypes
+as well as parser generation and parser invocation.
+
+
+------------------------------------------------------------------------------

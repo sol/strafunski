@@ -1,0 +1,16 @@
+definition
+
+module Main
+exports
+  sorts
+    SortA SortB
+  context-free syntax
+    SortA SortB	-> SortA {cons("A1")}
+    		-> SortA {cons("A2")}
+    SortA	-> SortB {cons("B1")}
+    
+  lexical syntax
+    [\ \t\n]	-> LAYOUT
+  context-free restrictions
+    LAYOUT? -/- [\ \t\n]
+    

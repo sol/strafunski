@@ -1,0 +1,14 @@
+Makefile
+Makefile.in
+configure
+config.*
+install-sh
+missing
+mkinstalldirs
+VERSION
+documentation
+*.m4
+*.cache
+*.tar.gz
+*.zip
+

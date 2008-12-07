@@ -1,0 +1,13 @@
+Makefile
+Makefile.in
+*.o
+*.hi
+*.asfix
+*.af
+*.dot
+Configuration.hs
+*.tbl
+*Instances.hs
+CobolSyntax.hs
+PerformGraph
+TestParser

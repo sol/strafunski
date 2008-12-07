@@ -1,0 +1,61 @@
+#############
+
+# Fix locations of programs:
+HC = ghc
+DRIFT = DrIFT
+
+# Reuse some make rules from StrategyLib
+Model=drift-default
+include ${StrategyLib}/scripts/makerules.opts
+include ${StrategyLib}/scripts/makerules.drift
+
+# We need some additional options
+GHCOPTS += ${ghc-opts} -package util -i${haterm}/library:${StrategyLib}/examples/haskell:
+
+# Don't lose tables or generated Haskell files after make finishes
+.PRECIOUS: *.tbl *.hs
+
+#############
+
+## Haskell related rules
+
+%: %.hs ${wildcard *.hs *.lhs}
+	${HC} ${GHCOPTS} --make $*.hs -o $@
+	
+%ATermConvertibleInstances.hs: %.hs
+	echo "module $*ATermConvertibleInstances where" > $@
+	echo "import $*" >> $@
+	echo "import ATermLib" >> $@
+	DrIFT -g ATermConvertible -r $< >> $@
+
+# Generate configuration file	
+configuration: Configuration.hs
+
+Configuration.hs: ${PWD}
+	@echo "-- | Generated module!" > $@
+	@echo "module Configuration where" >> $@
+	@echo "" >> $@
+	@echo "-- | Location where the program was compiled." >> $@
+	@echo "compilationDir :: String" >> $@
+	@echo "compilationDir = \"${PWD}\"" >> $@
+
+## SDF related rules
+
+%.tbl: %.def
+	sdf2table -i $< -o $@
+
+%.def.af: %.def.asfix
+	implode-asfix -i $< -o $@
+
+%.def.asfix: %.def sdf.2.3-I.tbl
+	sglr -2 -p sdf.2.3-I.tbl -i $< -o $@
+	
+## Run the Sdf2Haskell generator	
+
+%.hs: %.def
+	${Sdf2Haskell}/generator/Sdf2Haskell -i $< -o $@ -m $*
+
+%PP.hs: %.def
+	${Sdf2Haskell}/generator/Sdf2Haskell -i $< -o $@ -m $* -p
+
+##############

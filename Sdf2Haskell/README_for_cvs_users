@@ -1,0 +1,19 @@
+BEFORE YOU DO ANYTHING
+----------------------
+
+Run
+
+  ./reconf
+  
+before going into the normal configuration and building procedures as described
+in the README.
+
+
+DISTRIBUTION
+------------
+
+Type
+
+  gmake simple-distcheck
+
+to obtain a distribution.

@@ -1,0 +1,1197 @@
+definition
+
+module Main
+imports Layout Lex Syntax
+
+module Layout
+exports
+  lexical syntax
+    "%" ~[\n]* [\n] -> LAYOUT
+    [\ \t\n] -> LAYOUT
+    ", " -> LAYOUT
+    ",\n" -> LAYOUT
+
+  context-free restrictions
+    LAYOUT? -/- [\,\ \t\n\%]
+
+module Lex
+imports Layout
+
+exports
+  sorts Picture-string Quoted-pseudo-text Nonnumeric Lex-id Lex-Num
+
+  context-free syntax
+    Lex-id -> Cobword {cons("Lex-id")}
+
+  lexical syntax
+    ( ~[\ \t\n\,\;\.] | ( [\,\;\.] ~[\ \t\n] ) )+ -> Picture-string
+    "==" ~[\=]* "==" -> Quoted-pseudo-text
+    [\"] ~[\"]* [\"] -> Nonnumeric
+    [\'] ~[\']* [\'] -> Nonnumeric
+    [0-9\-]* [A-Za-z] [A-Za-z0-9\-]* -> Lex-id
+    [0-9]+ ( [\-] [0-9]+ )+ -> Lex-id
+    [\+\-]? ( ( [0-9]* [\.\,] [0-9]+ ) | [0-9]+ ) -> Lex-Num
+
+  lexical restrictions
+    Lex-id -/- [A-Za-z0-9\-]
+    Lex-Num -/- [0-9]
+    Picture-string -/- ~[\ \t\n\,\;\.]
+
+module Syntax
+imports Lex
+
+exports
+  sorts Cobol-source-program
+
+  context-free syntax
+    Identification "DIVISION" "." Program-id-cobol-source-program Identification-division-content Environment-division? Data-division? Procedure-division? End-program? -> Cobol-source-program {cons("Cobol-source-program")}
+    "END" "PROGRAM" Program-name "." -> End-program {cons("End-program")}
+    "ENVIRONMENT" "DIVISION" "." Environment-division-content -> Environment-division {cons("Environment-division")}
+    "DATA" "DIVISION" "." Data-division-content -> Data-division {cons("Data-division")}
+    "IDENTIFICATION" -> Identification {cons("IDENTIFICATION")}
+    "ID" -> Identification {cons("ID")}
+    Identification-division-phrase* -> Identification-division-content {cons("Identification-division-content")}
+    "AUTHOR" "."? -> Author {cons("Author")}
+    "INSTALLATION" "."? -> Installation {cons("Installation")}
+    "DATE-WRITTEN" "."? -> Date-written {cons("Date-written")}
+    "DATE-COMPILED" "."? -> Date-compiled {cons("Date-compiled")}
+    "SECURITY" "."? -> Security {cons("Security")}
+    "REMARKS" "."? -> Remarks {cons("Remarks")}
+    Author -> Identification-division-phrase {cons("Author1")}
+    Installation -> Identification-division-phrase {cons("Installation1")}
+    Date-written -> Identification-division-phrase {cons("Date-written1")}
+    Date-compiled -> Identification-division-phrase {cons("Date-compiled1")}
+    Security -> Identification-division-phrase {cons("Security1")}
+    Remarks -> Identification-division-phrase {cons("Remarks1")}
+    "PROGRAM-ID" "."? Program-name Initial-program? "."? -> Program-id-cobol-source-program {cons("Program-id-cobol-source-program")}
+    "IS"? "INITIAL" "PROGRAM"? -> Initial-program {cons("Initial-program")}
+    Configuration-section? Input-output-section? -> Environment-division-content {cons("Environment-division-content")}
+    "INPUT-OUTPUT" "SECTION" "." File-control-paragraph? I-o-control-paragraph? -> Input-output-section {cons("Input-output-section")}
+    "FILE-CONTROL" "." File-control-entry* -> File-control-paragraph {cons("File-control-paragraph")}
+    Select-clause Assign-clause Fce-phrase* "." -> File-control-entry {cons("File-control-entry")}
+    "ORGANIZATION" "IS"? -> Organization-is {cons("Organization-is")}
+    "SEQUENTIAL" -> Alt-sequential-random-dynamic {cons("SEQUENTIAL")}
+    "RANDOM" -> Alt-sequential-random-dynamic {cons("RANDOM")}
+    "DYNAMIC" -> Alt-sequential-random-dynamic {cons("DYNAMIC")}
+    "SELECT" "OPTIONAL"? File-name -> Select-clause {cons("Select-clause")}
+    "ASSIGN" "TO"? Alt-assignment-name-literal+ -> Assign-clause {cons("Assign-clause")}
+    Assignment-name -> Alt-assignment-name-literal {cons("Assignment-name")}
+    Literal -> Alt-assignment-name-literal {cons("Literal")}
+    "RESERVE" Integer-number Areas? -> Reserve-clause {cons("Reserve-clause")}
+    "AREA" -> Areas {cons("AREA")}
+    "AREAS" -> Areas {cons("AREAS")}
+    "PADDING" "CHARACTER"? "IS"? Alt-qualified-data-name-literal -> Padding-character-clause {cons("Padding-character-clause")}
+    "RECORD" "DELIMITER" "IS"? Record-delimiter-name -> Record-delimiter-clause {cons("Record-delimiter-clause")}
+    "STANDARD-1" -> Record-delimiter-name {cons("STANDARD-1")}
+    Assignment-name -> Record-delimiter-name {cons("Assignment-name1")}
+    "PASSWORD" "IS"? Data-name -> Password-clause {cons("Password-clause")}
+    "FILE"? "STATUS" "IS"? Qualified-data-name Qualified-data-name? -> File-status-clause {cons("File-status-clause")}
+    "RELATIVE" "KEY"? "IS"? Qualified-data-name -> Relative-key-clause {cons("Relative-key-clause")}
+    "RECORD" "KEY"? "IS"? Qualified-data-name -> Record-key-clause {cons("Record-key-clause")}
+    "ALTERNATE" "RECORD"? "KEY"? "IS"? Qualified-data-name Password-clause? With-duplicates? -> Alternate-record-key-clause {cons("Alternate-record-key-clause")}
+    "WITH"? "DUPLICATES" -> With-duplicates {cons("With-duplicates")}
+    "I-O-CONTROL" "." I-o-sam? I-o-sort-merge? -> I-o-control-paragraph {cons("I-o-control-paragraph")}
+    Qsam-or-sam-or-vsam-i-o-control-entries+ "." -> I-o-sam {cons("I-o-sam")}
+    Sort-merge-i-o-control-entries "." -> I-o-sort-merge {cons("I-o-sort-merge")}
+    Qsam-or-sam-or-vsam-i-o-control-entries-1 -> Qsam-or-sam-or-vsam-i-o-control-entries {cons("Qsam-or-sam-or-vsam-i-o-control-entries-1")}
+    Qsam-or-sam-or-vsam-i-o-control-entries-2 -> Qsam-or-sam-or-vsam-i-o-control-entries {cons("Qsam-or-sam-or-vsam-i-o-control-entries-2")}
+    Qsam-or-sam-or-vsam-i-o-control-entries-3 -> Qsam-or-sam-or-vsam-i-o-control-entries {cons("Qsam-or-sam-or-vsam-i-o-control-entries-3")}
+    Qsam-or-sam-or-vsam-i-o-control-entries-4 -> Qsam-or-sam-or-vsam-i-o-control-entries {cons("Qsam-or-sam-or-vsam-i-o-control-entries-4")}
+    "RERUN" "ON" Alt-assignment-name-file-name "EVERY"? Every-phrase "OF"? File-name -> Qsam-or-sam-or-vsam-i-o-control-entries-1 {cons("Qsam-or-sam-or-vsam-i-o-control-entries-11")}
+    Integer-number "RECORDS" -> Every-phrase-1 {cons("Every-phrase-1")}
+    "END" "OF"? Alt-reel-unit -> Every-phrase-2 {cons("Every-phrase-2")}
+    Every-phrase-1 -> Every-phrase {cons("Every-phrase-11")}
+    Every-phrase-2 -> Every-phrase {cons("Every-phrase-21")}
+    Assignment-name -> Alt-assignment-name-file-name {cons("Assignment-name2")}
+    File-name -> Alt-assignment-name-file-name {cons("File-name")}
+    "SAME" "RECORD"? "AREA"? "FOR"? File-name File-name+ -> Qsam-or-sam-or-vsam-i-o-control-entries-2 {cons("Qsam-or-sam-or-vsam-i-o-control-entries-21")}
+    "MULTIPLE" "FILE" "TAPE"? "CONTAINS"? File-name-position+ -> Qsam-or-sam-or-vsam-i-o-control-entries-3 {cons("Qsam-or-sam-or-vsam-i-o-control-entries-31")}
+    "POSITION" Integer-number -> Position {cons("Position")}
+    File-name Position? -> File-name-position {cons("File-name-position")}
+    "APPLY" "WRITE-ONLY" "ON"? File-name+ -> Qsam-or-sam-or-vsam-i-o-control-entries-4 {cons("Qsam-or-sam-or-vsam-i-o-control-entries-41")}
+    Rerun-on? Same-area+ -> Sort-merge-i-o-control-entries {cons("Sort-merge-i-o-control-entries")}
+    "RERUN" "ON" Assignment-name -> Rerun-on {cons("Rerun-on")}
+    "RECORD" -> Record-sort {cons("RECORD")}
+    "SORT" -> Record-sort {cons("SORT")}
+    "SORT-MERGE" -> Record-sort {cons("SORT-MERGE")}
+    "SAME" Record-sort "AREA"? "FOR"? File-name File-name+ -> Same-area {cons("Same-area")}
+    "CONFIGURATION" "SECTION" "." Configuration-section-paragraphs -> Configuration-section {cons("Configuration-section")}
+    Configuration-section-paragraph* -> Configuration-section-paragraphs {cons("Configuration-section-paragraphs")}
+    Source-computer-paragraph -> Configuration-section-paragraph {cons("Source-computer-paragraph")}
+    Object-computer-paragraph -> Configuration-section-paragraph {cons("Object-computer-paragraph")}
+    Special-names-paragraph -> Configuration-section-paragraph {cons("Special-names-paragraph")}
+    "SOURCE-COMPUTER" "." Source-computer-name? -> Source-computer-paragraph {cons("Source-computer-paragraph1")}
+    "WITH"? "DEBUGGING" "MODE" -> With-debugging-mode {cons("With-debugging-mode")}
+    Computer-name With-debugging-mode? "." -> Source-computer-name {cons("Source-computer-name")}
+    "OBJECT-COMPUTER" "." Object-computer-name? -> Object-computer-paragraph {cons("Object-computer-paragraph1")}
+    "WORDS" -> Memory-size-type {cons("WORDS")}
+    "CHARACTERS" -> Memory-size-type {cons("CHARACTERS")}
+    "MODULES" -> Memory-size-type {cons("MODULES")}
+    "MEMORY" "SIZE"? Integer-number Memory-size-type -> Memory-size {cons("Memory-size")}
+    Computer-name Memory-size? Object-computer-paragraph-sequence-phrase "." -> Object-computer-name {cons("Object-computer-name")}
+    Program-collating-sequence? Segment-limit? -> Object-computer-paragraph-sequence-phrase {cons("Object-computer-paragraph-sequence-phrase")}
+    "PROGRAM"? "COLLATING"? "SEQUENCE" "IS"? Alphabet-name -> Program-collating-sequence {cons("Program-collating-sequence")}
+    "SEGMENT-LIMIT" "IS"? Priority-number -> Segment-limit {cons("Segment-limit")}
+    "SPECIAL-NAMES" "." Special-names-paragraph-phrase* Special-names-paragraph-clauses "."? -> Special-names-paragraph {cons("Special-names-paragraph1")}
+    "IS"? Mnemonic-name Special-names-paragraph-status-phrase? -> Is-mnemonic-name {cons("Is-mnemonic-name")}
+    Is-mnemonic-name -> Special-names-paragraph-phrase-tail {cons("Is-mnemonic-name1")}
+    Special-names-paragraph-status-phrase -> Special-names-paragraph-phrase-tail {cons("Special-names-paragraph-status-phrase")}
+    Environment-name Special-names-paragraph-phrase-tail -> Special-names-paragraph-phrase {cons("Special-names-paragraph-phrase")}
+    Special-names-paragraph-status-phrase-1 -> Special-names-paragraph-status-phrase {cons("Special-names-paragraph-status-phrase-1")}
+    Special-names-paragraph-status-phrase-2 -> Special-names-paragraph-status-phrase {cons("Special-names-paragraph-status-phrase-2")}
+    "ON" "STATUS"? "IS"? Condition Off-status? -> Special-names-paragraph-status-phrase-1 {cons("Special-names-paragraph-status-phrase-11")}
+    "OFF" "STATUS"? "IS"? Condition -> Off-status {cons("Off-status")}
+    "OFF" "STATUS"? "IS"? Condition On-status? -> Special-names-paragraph-status-phrase-2 {cons("Special-names-paragraph-status-phrase-21")}
+    "ON" "STATUS"? "IS"? Condition -> On-status {cons("On-status")}
+    Special-names-paragraph-clause* -> Special-names-paragraph-clauses {cons("Special-names-paragraph-clauses")}
+    Alphabet-clause -> Special-names-paragraph-clause {cons("Alphabet-clause")}
+    Symbolic-characters-clause -> Special-names-paragraph-clause {cons("Symbolic-characters-clause")}
+    Class-clause -> Special-names-paragraph-clause {cons("Class-clause")}
+    Currency-sign-clause -> Special-names-paragraph-clause {cons("Currency-sign-clause")}
+    Decimal-point-clause -> Special-names-paragraph-clause {cons("Decimal-point-clause")}
+    "ALPHABET" Alphabet-name "IS"? Alphabet-type -> Alphabet-clause {cons("Alphabet-clause1")}
+    "ALSO" Literal -> Alphabet-type-also {cons("Alphabet-type-also")}
+    Alphabet-type-also+ -> Alphabet-type-alsos {cons("Alphabet-type-alsos")}
+    Through-literal -> Alphabet-type-also-through {cons("Through-literal")}
+    Alphabet-type-alsos -> Alphabet-type-also-through {cons("Alphabet-type-alsos1")}
+    Literal Alphabet-type-also-through? -> Alphabet-type-other {cons("Alphabet-type-other")}
+    Alphabet-type-other+ -> Alphabet-type-others {cons("Alphabet-type-others")}
+    "STANDARD-1" -> Alphabet-type {cons("STANDARD-11")}
+    "STANDARD-2" -> Alphabet-type {cons("STANDARD-2")}
+    "NATIVE" -> Alphabet-type {cons("NATIVE")}
+    "EBCDIC" -> Alphabet-type {cons("EBCDIC")}
+    Alphabet-type-others -> Alphabet-type {cons("Alphabet-type-others1")}
+    "SYMBOLIC" "CHARACTERS"? Symbolic-character-mapping+ In-alphabet-name? -> Symbolic-characters-clause {cons("Symbolic-characters-clause1")}
+    "ARE" -> Are {cons("ARE")}
+    "IS" -> Are {cons("IS")}
+    Symbolic-character+ Are? Integer-number+ -> Symbolic-character-mapping {cons("Symbolic-character-mapping")}
+    "IN" Alphabet-name -> In-alphabet-name {cons("In-alphabet-name")}
+    "CLASS" Class-name "IS"? Literal-through-literal+ -> Class-clause {cons("Class-clause1")}
+    "CURRENCY" "SIGN"? "IS"? Literal -> Currency-sign-clause {cons("Currency-sign-clause1")}
+    "DECIMAL-POINT" "IS"? "COMMA" -> Decimal-point-clause {cons("Decimal-point-clause1")}
+    File-section? Working-storage-section? Linkage-section? -> Data-division-content {cons("Data-division-content")}
+    File-and-sort-description-entry Data-description-entry+ -> File-section-entry {cons("File-section-entry")}
+    "FILE" "SECTION" "." File-section-entry* -> File-section {cons("File-section")}
+    "WORKING-STORAGE" "SECTION" "." Data-description-entry* -> Working-storage-section {cons("Working-storage-section")}
+    "LINKAGE" "SECTION" "." Data-description-entry* -> Linkage-section {cons("Linkage-section")}
+    Alt-fd-sd File-name File-and-sort-description-entry-clauses "." -> File-and-sort-description-entry {cons("File-and-sort-description-entry")}
+    "FD" -> Alt-fd-sd {cons("FD")}
+    "SD" -> Alt-fd-sd {cons("SD")}
+    File-and-sort-description-entry-clause* -> File-and-sort-description-entry-clauses {cons("File-and-sort-description-entry-clauses")}
+    External-clause -> File-and-sort-description-entry-clause {cons("External-clause")}
+    Global-clause -> File-and-sort-description-entry-clause {cons("Global-clause")}
+    Block-contains-clause -> File-and-sort-description-entry-clause {cons("Block-contains-clause")}
+    Record-clause -> File-and-sort-description-entry-clause {cons("Record-clause")}
+    Label-records-clause -> File-and-sort-description-entry-clause {cons("Label-records-clause")}
+    Value-of-clause -> File-and-sort-description-entry-clause {cons("Value-of-clause")}
+    Data-records-clause -> File-and-sort-description-entry-clause {cons("Data-records-clause")}
+    Linage-clause -> File-and-sort-description-entry-clause {cons("Linage-clause")}
+    Recording-mode-clause -> File-and-sort-description-entry-clause {cons("Recording-mode-clause")}
+    Code-set-clause -> File-and-sort-description-entry-clause {cons("Code-set-clause")}
+    "BLOCK" "CONTAINS"? Integer-to? Integer-number Alt-characters-records? -> Block-contains-clause {cons("Block-contains-clause1")}
+    "CHARACTERS" -> Alt-characters-records {cons("CHARACTERS1")}
+    "RECORDS" -> Alt-characters-records {cons("RECORDS")}
+    "RECORD" -> Alt-characters-records {cons("RECORD1")}
+    "RECORD" Record-clause-tail -> Record-clause {cons("Record-clause1")}
+    "DEPENDING" "ON"? Data-name -> Depending-on {cons("Depending-on")}
+    "CONTAINS"? Integer-number "CHARACTERS"? -> Record-clause-tail-1 {cons("Record-clause-tail-1")}
+    "CONTAINS"? Integer-number "TO" Integer-number "CHARACTERS"? -> Record-clause-tail-2 {cons("Record-clause-tail-2")}
+    Record-varying-phrase Depending-on? -> Record-clause-tail-3 {cons("Record-clause-tail-3")}
+    Record-clause-tail-2 -> Record-clause-tail {cons("Record-clause-tail-21")}
+    Record-clause-tail-1 -> Record-clause-tail {cons("Record-clause-tail-11")}
+    Record-clause-tail-3 -> Record-clause-tail {cons("Record-clause-tail-31")}
+    "IS"? "VARYING" "IN"? "SIZE"? From-integer? To-integer? "CHARACTERS"? -> Record-varying-phrase {cons("Record-varying-phrase")}
+    "FROM"? Integer-number -> From-integer {cons("From-integer")}
+    "TO" Integer-number -> To-integer {cons("To-integer")}
+    "LABEL" Records-are Label-records-clause-tail -> Label-records-clause {cons("Label-records-clause1")}
+    Data-name+ -> Data-names {cons("Data-names")}
+    "STANDARD" -> Label-records-clause-tail {cons("STANDARD")}
+    "OMITTED" -> Label-records-clause-tail {cons("OMITTED")}
+    Data-names -> Label-records-clause-tail {cons("Data-names1")}
+    "VALUE" "OF" Value-of-clause-tail+ -> Value-of-clause {cons("Value-of-clause1")}
+    Qualified-data-name -> Alt-qualified-data-name-literal {cons("Qualified-data-name")}
+    Literal -> Alt-qualified-data-name-literal {cons("Literal1")}
+    System-name "IS"? Alt-qualified-data-name-literal -> Value-of-clause-tail {cons("Value-of-clause-tail")}
+    "DATA" Records-are Data-name+ -> Data-records-clause {cons("Data-records-clause1")}
+    Records Are? -> Records-are {cons("Records-are")}
+    "LINAGE" "IS"? Alt-data-name-integer "LINES"? Linage-footing-phrase -> Linage-clause {cons("Linage-clause1")}
+    Footing? Lines-top? Lines-bottom? -> Linage-footing-phrase {cons("Linage-footing-phrase")}
+    Data-name -> Alt-data-name-integer {cons("Data-name")}
+    Integer-number -> Alt-data-name-integer {cons("Integer")}
+    "WITH"? "FOOTING" "AT"? Alt-data-name-integer -> Footing {cons("Footing")}
+    "LINES"? "AT"? "TOP" Alt-data-name-integer -> Lines-top {cons("Lines-top")}
+    "LINES"? "AT"? "BOTTOM" Alt-data-name-integer -> Lines-bottom {cons("Lines-bottom")}
+    "RECORDING" "MODE"? "IS"? Cobword -> Recording-mode-clause {cons("Recording-mode-clause1")}
+    "CODE-SET" "IS"? Alphabet-name -> Code-set-clause {cons("Code-set-clause1")}
+    Data-description-entry-1 -> Data-description-entry {cons("Data-description-entry-1")}
+    Copy-statement -> Data-description-entry {cons("Copy-statement")}
+    Level-number Alt-data-name-filler? Data-description-entry-clauses "."? -> Data-description-entry-1 {cons("Data-description-entry-11")}
+    Data-name -> Alt-data-name-filler {cons("Data-name1")}
+    "FILLER" -> Alt-data-name-filler {cons("FILLER")}
+    Data-description-entry-clause* -> Data-description-entry-clauses {cons("Data-description-entry-clauses")}
+    Redefines-clause -> Data-description-entry-clause {cons("Redefines-clause")}
+    Blank-when-zero-clause -> Data-description-entry-clause {cons("Blank-when-zero-clause")}
+    External-clause -> Data-description-entry-clause {cons("External-clause1")}
+    Global-clause -> Data-description-entry-clause {cons("Global-clause1")}
+    Justified-clause -> Data-description-entry-clause {cons("Justified-clause")}
+    Occurs-clause -> Data-description-entry-clause {cons("Occurs-clause")}
+    Picture-clause -> Data-description-entry-clause {cons("Picture-clause")}
+    Sign-clause -> Data-description-entry-clause {cons("Sign-clause")}
+    Synchronized-clause -> Data-description-entry-clause {cons("Synchronized-clause")}
+    Usage-clause -> Data-description-entry-clause {cons("Usage-clause")}
+    Renames-clause -> Data-description-entry-clause {cons("Renames-clause")}
+    Condition-value-clause -> Data-description-entry-clause {cons("Condition-value-clause")}
+    "REDEFINES" Data-name -> Redefines-clause {cons("Redefines-clause1")}
+    "BLANK" "WHEN"? Zeroes -> Blank-when-zero-clause {cons("Blank-when-zero-clause1")}
+    "ZERO" -> Zeroes {cons("ZERO")}
+    "ZEROS" -> Zeroes {cons("ZEROS")}
+    "ZEROES" -> Zeroes {cons("ZEROES")}
+    "IS"? "EXTERNAL" -> External-clause {cons("External-clause2")}
+    "IS"? "GLOBAL" -> Global-clause {cons("Global-clause2")}
+    Justified "RIGHT"? -> Justified-clause {cons("Justified-clause1")}
+    "JUSTIFIED" -> Justified {cons("JUSTIFIED")}
+    "JUST" -> Justified {cons("JUST")}
+    Occurs-clause-2 -> Occurs-clause {cons("Occurs-clause-2")}
+    Occurs-clause-1 -> Occurs-clause {cons("Occurs-clause-1")}
+    "OCCURS" Integer-number "TIMES"? Occurs-clause-key* Indexed-by? -> Occurs-clause-1 {cons("Occurs-clause-11")}
+    "OCCURS" Integer-to? Integer-number "TIMES"? "DEPENDING" "ON"? Qualified-data-name Occurs-clause-key* Indexed-by? -> Occurs-clause-2 {cons("Occurs-clause-21")}
+    Integer-number "TO" -> Integer-to {cons("Integer-to")}
+    Alt-ascending-descending "KEY"? "IS"? Qualified-data-name+ -> Occurs-clause-key {cons("Occurs-clause-key")}
+    "INDEXED" "BY"? Index-name+ -> Indexed-by {cons("Indexed-by")}
+    Picture "IS"? Picture-string -> Picture-clause {cons("Picture-clause1")}
+    "PICTURE" -> Picture {cons("PICTURE")}
+    "PIC" -> Picture {cons("PIC")}
+    Sign-is? Alt-leading-trailing Separate-character? -> Sign-clause {cons("Sign-clause1")}
+    "SIGN" "IS"? -> Sign-is {cons("Sign-is")}
+    "SEPARATE" "CHARACTER"? -> Separate-character {cons("Separate-character")}
+    "LEADING" -> Alt-leading-trailing {cons("LEADING")}
+    "TRAILING" -> Alt-leading-trailing {cons("TRAILING")}
+    Synchronized Alt-left-right? -> Synchronized-clause {cons("Synchronized-clause1")}
+    "LEFT" -> Alt-left-right {cons("LEFT")}
+    "RIGHT" -> Alt-left-right {cons("RIGHT")}
+    "SYNCHRONIZED" -> Synchronized {cons("SYNCHRONIZED")}
+    "SYNC" -> Synchronized {cons("SYNC")}
+    Usage-is? Usage -> Usage-clause {cons("Usage-clause1")}
+    "USAGE" "IS"? -> Usage-is {cons("Usage-is")}
+    "BINARY" -> Usage {cons("BINARY")}
+    "COMP" -> Usage {cons("COMP")}
+    "COMP-1" -> Usage {cons("COMP-1")}
+    "COMP-2" -> Usage {cons("COMP-2")}
+    "COMP-3" -> Usage {cons("COMP-3")}
+    "COMP-4" -> Usage {cons("COMP-4")}
+    "COMPUTATIONAL" -> Usage {cons("COMPUTATIONAL")}
+    "COMPUTATIONAL-1" -> Usage {cons("COMPUTATIONAL-1")}
+    "COMPUTATIONAL-2" -> Usage {cons("COMPUTATIONAL-2")}
+    "COMPUTATIONAL-3" -> Usage {cons("COMPUTATIONAL-3")}
+    "COMPUTATIONAL-4" -> Usage {cons("COMPUTATIONAL-4")}
+    "DISPLAY" -> Usage {cons("DISPLAY")}
+    "DISPLAY-1" -> Usage {cons("DISPLAY-1")}
+    "INDEX" -> Usage {cons("INDEX")}
+    "PACKED-DECIMAL" -> Usage {cons("PACKED-DECIMAL")}
+    "POINTER" -> Usage {cons("POINTER")}
+    "RENAMES" Qualified-data-name Through-qualified-data-name? -> Renames-clause {cons("Renames-clause1")}
+    Through Qualified-data-name -> Through-qualified-data-name {cons("Through-qualified-data-name")}
+    Values-are Literal-through-literal+ -> Condition-value-clause {cons("Condition-value-clause1")}
+    Through Literal -> Through-literal {cons("Through-literal1")}
+    Literal Through-literal? -> Literal-through-literal {cons("Literal-through-literal")}
+    Values Are? -> Values-are {cons("Values-are")}
+    "PROCEDURE" "DIVISION" Using-phrase Declaratives? Sections -> Procedure-division {cons("Procedure-division")}
+    Section-header "." Use-statement "." Paragraphs -> Declaratives-content {cons("Declaratives-content")}
+    "DECLARATIVES" "." Declaratives-content+ "END" "DECLARATIVES" "." -> Declaratives {cons("Declaratives")}
+    Using-phrase-1 -> Using-phrase {cons("Using-phrase-1")}
+    Using-phrase-2 -> Using-phrase {cons("Using-phrase-2")}
+    Using-data-name-pluslist? "." -> Using-phrase-1 {cons("Using-phrase-11")}
+    Using-data-names? Copy-statement -> Using-phrase-2 {cons("Using-phrase-21")}
+    "USING" Data-name* -> Using-data-names {cons("Using-data-names")}
+    Section-name "SECTION" Priority-number? -> Section-header {cons("Section-header")}
+    Sentence* Paragraph* -> Paragraphs {cons("Paragraphs")}
+    Sentence-1 -> Sentence {cons("Sentence-1")}
+    Sentence-2 -> Sentence {cons("Sentence-2")}
+    Statement-list "."+ -> Sentence-1 {cons("Sentence-11")}
+    Statement-list? Copy-statement -> Sentence-2 {cons("Sentence-21")}
+    Altered-goto -> Paragraph {cons("Altered-goto")}
+    Paragraph-1 -> Paragraph {cons("Paragraph-1")}
+    Paragraph-name "." Sentence* -> Paragraph-1 {cons("Paragraph-11")}
+    Paragraph-name "." "GO" "TO"? "." -> Altered-goto {cons("Altered-goto1")}
+    Paragraphs Section-with-header* -> Sections {cons("Sections")}
+    Section-header "." Paragraphs -> Section-with-header {cons("Section-with-header")}
+    Primitive -> Statement {cons("Primitive")}
+    Branch -> Statement {cons("Branch")}
+    Terminator -> Statement {cons("Terminator")}
+    Accept-statement-2 -> Accept-statement {cons("Accept-statement-2")}
+    Accept-statement-1 -> Accept-statement {cons("Accept-statement-1")}
+    "ACCEPT" Identifier From-environment-name? -> Accept-statement-1 {cons("Accept-statement-11")}
+    "FROM" Cobword -> From-environment-name {cons("From-environment-name")}
+    "ACCEPT" Identifier "FROM" Date -> Accept-statement-2 {cons("Accept-statement-21")}
+    "DATE" -> Date {cons("DATE")}
+    "DAY" -> Date {cons("DAY")}
+    "DAY-OF-WEEK" -> Date {cons("DAY-OF-WEEK")}
+    "TIME" -> Date {cons("TIME")}
+    Add-statement-2 -> Add-statement {cons("Add-statement-2")}
+    Add-statement-1 -> Add-statement {cons("Add-statement-1")}
+    Add-statement-3 -> Add-statement {cons("Add-statement-3")}
+    "ADD" Cobword-lit+ "TO" Cobword-rounded+ -> Add-statement-1 {cons("Add-statement-11")}
+    "ADD" Cobword-lit+ To-cobword-lit? "GIVING" Cobword-rounded+ -> Add-statement-2 {cons("Add-statement-21")}
+    "ADD" Corresponding Identifier "TO" Identifier "ROUNDED"? -> Add-statement-3 {cons("Add-statement-31")}
+    Statement+ -> Statement-list {cons("Statement-list")}
+    "ALTER" Procedure-to-procedure+ -> Alter-statement {cons("Alter-statement")}
+    "PROCEED" "TO" -> Proceed-to {cons("Proceed-to")}
+    Procedure-name "TO" Proceed-to? Procedure-name -> Procedure-to-procedure {cons("Procedure-to-procedure")}
+    "CALL" Cobword-lit Using-parameters? -> Call-statement {cons("Call-statement")}
+    "BY"? "REFERENCE" -> By-reference {cons("By-reference")}
+    Identifier -> Content-parameter-value {cons("Identifier")}
+    Literal -> Content-parameter-value {cons("Literal2")}
+    By-reference? Identifier -> Reference-parameter {cons("Reference-parameter")}
+    "BY"? "CONTENT" Content-parameter-value+ -> Content-parameter {cons("Content-parameter")}
+    Reference-parameter -> Parameter {cons("Reference-parameter1")}
+    Content-parameter -> Parameter {cons("Content-parameter1")}
+    "USING" Parameter+ -> Using-parameters {cons("Using-parameters")}
+    "CANCEL" Cobword-lit+ -> Cancel-statement {cons("Cancel-statement")}
+    "CLOSE" Close-statement-file-name+ -> Close-statement {cons("Close-statement")}
+    For-removal -> Alt-removal-no-rewind {cons("For-removal")}
+    With-no-rewind -> Alt-removal-no-rewind {cons("With-no-rewind")}
+    "REEL" -> Alt-reel-unit {cons("REEL")}
+    "UNIT" -> Alt-reel-unit {cons("UNIT")}
+    No-rewind -> Alt-no-rewind-lock {cons("No-rewind")}
+    "LOCK" -> Alt-no-rewind-lock {cons("LOCK")}
+    Alt-reel-unit Alt-removal-no-rewind? -> Close-statement-options-1 {cons("Close-statement-options-1")}
+    "WITH"? Alt-no-rewind-lock -> Close-statement-options-2 {cons("Close-statement-options-2")}
+    Close-statement-options-1 -> Close-statement-options {cons("Close-statement-options-11")}
+    Close-statement-options-2 -> Close-statement-options {cons("Close-statement-options-21")}
+    File-name Close-statement-options? -> Close-statement-file-name {cons("Close-statement-file-name")}
+    "COMPUTE" Cobword-rounded+ Equal Arithmetic-expression -> Compute-statement {cons("Compute-statement")}
+    "=" -> Equal {cons("Equal-dunno-a_0")}
+    "EQUAL" -> Equal {cons("EQUAL")}
+    "CONTINUE" -> Continue-statement {cons("Continue-statement")}
+    "DELETE" File-name "RECORD"? -> Delete-statement {cons("Delete-statement")}
+    "DISPLAY" Cobword-lit+ Upon-environment-name? With-no-advancing? -> Display-statement {cons("Display-statement")}
+    "UPON" Cobword -> Upon-environment-name {cons("Upon-environment-name")}
+    "WITH"? "NO" "ADVANCING" -> With-no-advancing {cons("With-no-advancing")}
+    Divide-statement-4 -> Divide-statement {cons("Divide-statement-4")}
+    Divide-statement-5 -> Divide-statement {cons("Divide-statement-5")}
+    Divide-statement-2 -> Divide-statement {cons("Divide-statement-2")}
+    Divide-statement-3 -> Divide-statement {cons("Divide-statement-3")}
+    Divide-statement-1 -> Divide-statement {cons("Divide-statement-1")}
+    "DIVIDE" Cobword-lit "INTO" Cobword-rounded+ -> Divide-statement-1 {cons("Divide-statement-11")}
+    "DIVIDE" Cobword-lit "INTO" Cobword-lit "GIVING" Cobword-rounded+ -> Divide-statement-2 {cons("Divide-statement-21")}
+    "DIVIDE" Cobword-lit "BY" Cobword-lit "GIVING" Cobword-rounded+ -> Divide-statement-3 {cons("Divide-statement-31")}
+    "DIVIDE" Cobword-lit "INTO" Cobword-lit "GIVING" Identifier "ROUNDED"? "REMAINDER" Identifier -> Divide-statement-4 {cons("Divide-statement-41")}
+    "DIVIDE" Cobword-lit "BY" Cobword-lit "GIVING" Identifier "ROUNDED"? "REMAINDER" Identifier -> Divide-statement-5 {cons("Divide-statement-51")}
+    "ENTRY" Literal Using-data-name-pluslist? -> Entry-statement {cons("Entry-statement")}
+    "USING" Data-name+ -> Using-data-name-pluslist {cons("Using-data-name-pluslist")}
+    "EVALUATE" Evaluate-condition Also-phrase* -> Evaluate-statement {cons("Evaluate-statement")}
+    Condition -> Evaluate-condition {cons("Condition")}
+    "TRUE" -> Evaluate-condition {cons("TRUE")}
+    "FALSE" -> Evaluate-condition {cons("FALSE")}
+    "ALSO" Evaluate-condition -> Also-phrase {cons("Also-phrase")}
+    "ALSO" Evaluate-phrase -> When-phrase-also-phrase {cons("When-phrase-also-phrase")}
+    "ANY" -> Evaluate-phrase {cons("ANY")}
+    Condition -> Evaluate-phrase {cons("Condition1")}
+    "TRUE" -> Evaluate-phrase {cons("TRUE1")}
+    "FALSE" -> Evaluate-phrase {cons("FALSE1")}
+    Evaluate-phrase-1 -> Evaluate-phrase {cons("Evaluate-phrase-1")}
+    "NOT"? Arithmetic-expression Through-arithmetic-expression? -> Evaluate-phrase-1 {cons("Evaluate-phrase-11")}
+    Through Arithmetic-expression -> Through-arithmetic-expression {cons("Through-arithmetic-expression")}
+    "EXIT" -> Exit-statement {cons("Exit-statement")}
+    "EXIT" "PROGRAM" -> Exit-program-statement {cons("Exit-program-statement")}
+    "GOBACK" -> Goback-statement {cons("Goback-statement")}
+    Go-to-statement-2 -> Go-to-statement {cons("Go-to-statement-2")}
+    Go-to-statement-1 -> Go-to-statement {cons("Go-to-statement-1")}
+    Go-to-statement-3 -> Go-to-statement {cons("Go-to-statement-3")}
+    "GO" "TO"? Procedure-name -> Go-to-statement-1 {cons("Go-to-statement-11")}
+    "GO" "TO"? Procedure-name+ "DEPENDING" "ON"? Identifier -> Go-to-statement-2 {cons("Go-to-statement-21")}
+    "IF" Condition "THEN"? -> If-statement {cons("If-statement")}
+    "INITIALIZE" Identifier+ Initialize-replacing-phrase? -> Initialize-statement {cons("Initialize-statement")}
+    "ALPHABETIC" -> Initialize-replacing-type {cons("ALPHABETIC")}
+    "ALPHANUMERIC" -> Initialize-replacing-type {cons("ALPHANUMERIC")}
+    "NUMERIC" -> Initialize-replacing-type {cons("NUMERIC")}
+    "ALPHANUMERIC-EDITED" -> Initialize-replacing-type {cons("ALPHANUMERIC-EDITED")}
+    "NUMERIC-EDITED" -> Initialize-replacing-type {cons("NUMERIC-EDITED")}
+    "DBCS" -> Initialize-replacing-type {cons("DBCS")}
+    "EGCS" -> Initialize-replacing-type {cons("EGCS")}
+    Initialize-replacing-type "DATA"? "BY" Cobword-lit -> Initialize-replacing-argument {cons("Initialize-replacing-argument")}
+    "REPLACING" Initialize-replacing-argument+ -> Initialize-replacing-phrase {cons("Initialize-replacing-phrase")}
+    Inspect-statement-1 -> Inspect-statement {cons("Inspect-statement-1")}
+    Inspect-statement-2 -> Inspect-statement {cons("Inspect-statement-2")}
+    Inspect-statement-3 -> Inspect-statement {cons("Inspect-statement-3")}
+    Inspect-statement-4 -> Inspect-statement {cons("Inspect-statement-4")}
+    "INSPECT" Identifier "TALLYING" Tallying-argument+ -> Inspect-statement-1 {cons("Inspect-statement-11")}
+    "INSPECT" Identifier "CONVERTING" Cobword-lit "TO" Cobword-lit Before-after-phrase* -> Inspect-statement-2 {cons("Inspect-statement-21")}
+    "INSPECT" Identifier "TALLYING" Tallying-argument+ "REPLACING" Inspect-replacing-phrase+ -> Inspect-statement-3 {cons("Inspect-statement-31")}
+    Cobword-lit Before-after-phrase* -> Tallying-for-cobword-lit {cons("Tallying-for-cobword-lit")}
+    "ALL" -> Alt-all-leading {cons("ALL")}
+    "LEADING" -> Alt-all-leading {cons("LEADING1")}
+    "CHARACTERS" Before-after-phrase* -> Tallying-for-argument-1 {cons("Tallying-for-argument-1")}
+    Alt-all-leading Tallying-for-cobword-lit+ -> Tallying-for-argument-2 {cons("Tallying-for-argument-2")}
+    Tallying-for-argument-1 -> Tallying-for-argument {cons("Tallying-for-argument-11")}
+    Tallying-for-argument-2 -> Tallying-for-argument {cons("Tallying-for-argument-21")}
+    Identifier "FOR" Tallying-for-argument+ -> Tallying-argument {cons("Tallying-argument")}
+    "INSPECT" Identifier "REPLACING" Inspect-replacing-phrase+ -> Inspect-statement-4 {cons("Inspect-statement-41")}
+    Inspect-by-argument "BY" Inspect-by-argument Before-after-phrase* -> Inspect-replacing-argument {cons("Inspect-replacing-argument")}
+    "ALL" -> Alt-all-leading-first {cons("ALL1")}
+    "LEADING" -> Alt-all-leading-first {cons("LEADING2")}
+    "FIRST" -> Alt-all-leading-first {cons("FIRST")}
+    "CHARACTERS" "BY" Cobword-lit Before-after-phrase* -> Inspect-replacing-phrase-1 {cons("Inspect-replacing-phrase-1")}
+    Alt-all-leading-first Inspect-replacing-argument+ -> Inspect-replacing-phrase-2 {cons("Inspect-replacing-phrase-2")}
+    Inspect-replacing-phrase-1 -> Inspect-replacing-phrase {cons("Inspect-replacing-phrase-11")}
+    Inspect-replacing-phrase-2 -> Inspect-replacing-phrase {cons("Inspect-replacing-phrase-21")}
+    Alt-before-after "INITIAL"? Cobword-lit -> Before-after-phrase {cons("Before-after-phrase")}
+    "MERGE" File-name On-key-phrase+ Collating-sequence? "USING" File-name File-name+ Merge-statement-tail -> Merge-statement {cons("Merge-statement")}
+    "ON"? Alt-ascending-descending "KEY"? Qualified-data-name+ -> On-key-phrase {cons("On-key-phrase")}
+    Output-procedure -> Merge-statement-tail {cons("Output-procedure")}
+    Giving-file-names -> Merge-statement-tail {cons("Giving-file-names")}
+    Move-statement-1 -> Move-statement {cons("Move-statement-1")}
+    Move-statement-2 -> Move-statement {cons("Move-statement-2")}
+    "MOVE" Cobword-lit "TO" Identifier+ -> Move-statement-1 {cons("Move-statement-11")}
+    "MOVE" Corresponding Identifier "TO" Identifier+ -> Move-statement-2 {cons("Move-statement-21")}
+    Multiply-statement-2 -> Multiply-statement {cons("Multiply-statement-2")}
+    Multiply-statement-1 -> Multiply-statement {cons("Multiply-statement-1")}
+    "MULTIPLY" Cobword-lit "BY" Cobword-rounded+ -> Multiply-statement-1 {cons("Multiply-statement-11")}
+    "MULTIPLY" Cobword-lit "BY" Cobword-lit "GIVING" Cobword-rounded+ -> Multiply-statement-2 {cons("Multiply-statement-21")}
+    "OPEN" Open-statement-phrase+ -> Open-statement {cons("Open-statement")}
+    "REVERSED" -> Alt-reversed-with-no-rewind {cons("REVERSED")}
+    With-no-rewind -> Alt-reversed-with-no-rewind {cons("With-no-rewind1")}
+    File-name Alt-reversed-with-no-rewind? -> Open-statement-input-file-name {cons("Open-statement-input-file-name")}
+    "WITH"? "NO" "REWIND" -> With-no-rewind {cons("With-no-rewind2")}
+    File-name With-no-rewind? -> Open-statement-output-file-name {cons("Open-statement-output-file-name")}
+    "INPUT" Open-statement-input-file-name+ -> Open-statement-input {cons("Open-statement-input")}
+    "OUTPUT" Open-statement-output-file-name+ -> Open-statement-output {cons("Open-statement-output")}
+    "I-O" File-name+ -> Open-statement-i-o {cons("Open-statement-i-o")}
+    "EXTEND" File-name+ -> Open-statement-extend {cons("Open-statement-extend")}
+    Open-statement-input -> Open-statement-phrase {cons("Open-statement-input1")}
+    Open-statement-output -> Open-statement-phrase {cons("Open-statement-output1")}
+    Open-statement-i-o -> Open-statement-phrase {cons("Open-statement-i-o1")}
+    Open-statement-extend -> Open-statement-phrase {cons("Open-statement-extend1")}
+    "PERFORM" Perform-statement-procedure? Perform-varying-phrase? Perform-after-phrase* Number-times? Perform-until-phrase? -> Perform-statement {cons("Perform-statement")}
+    Procedure-name Through-procedure-name? -> Perform-statement-procedure {cons("Perform-statement-procedure")}
+    With-test? "VARYING" Identifier "FROM" Cobword-lit "BY" Cobword-lit "UNTIL" Condition -> Perform-varying-phrase {cons("Perform-varying-phrase")}
+    "AFTER" Identifier "FROM" Cobword-lit "BY" Cobword-lit "UNTIL" Condition -> Perform-after-phrase {cons("Perform-after-phrase")}
+    With-test? "UNTIL" Condition -> Perform-until-phrase {cons("Perform-until-phrase")}
+    "WITH"? "TEST" Alt-before-after -> With-test {cons("With-test")}
+    "READ" File-name "NEXT"? "RECORD"? Into-identifier? Key-is-qualified-data-name? -> Read-statement {cons("Read-statement")}
+    "KEY" "IS"? Qualified-data-name -> Key-is-qualified-data-name {cons("Key-is-qualified-data-name")}
+    "RELEASE" Record-name From-identifier? -> Release-statement {cons("Release-statement")}
+    "RETURN" File-name "RECORD"? Into-identifier? -> Return-statement {cons("Return-statement")}
+    "INTO" Identifier -> Into-identifier {cons("Into-identifier")}
+    "REWRITE" Record-name From-identifier? -> Rewrite-statement {cons("Rewrite-statement")}
+    Search-statement-1 -> Search-statement {cons("Search-statement-1")}
+    Search-statement-2 -> Search-statement {cons("Search-statement-2")}
+    "SEARCH" Identifier Varying-identifier? -> Search-statement-1 {cons("Search-statement-11")}
+    "VARYING" Identifier -> Varying-identifier {cons("Varying-identifier")}
+    "SEARCH" "ALL" Identifier -> Search-statement-2 {cons("Search-statement-21")}
+    Equal-to-1 -> Equal-to {cons("Equal-to-1")}
+    "=" -> Equal-to {cons("Equal-to-dunno-b_0")}
+    "SET" Set-statement-phrase+ -> Set-statement {cons("Set-statement")}
+    Alt-up-down "BY" -> Alt-up-down-by {cons("Alt-up-down-by")}
+    "SORT" File-name On-key-is-phrase+ With-duplicates-in-order? Collating-sequence? Sort-statement-in Sort-statement-out -> Sort-statement {cons("Sort-statement")}
+    "KEY" "IS"? -> Key-is {cons("Key-is")}
+    "ASCENDING" -> Alt-ascending-descending {cons("ASCENDING")}
+    "DESCENDING" -> Alt-ascending-descending {cons("DESCENDING")}
+    "ON"? Alt-ascending-descending Key-is? Qualified-data-name+ -> On-key-is-phrase {cons("On-key-is-phrase")}
+    "WITH"? "DUPLICATES" "IN"? "ORDER"? -> With-duplicates-in-order {cons("With-duplicates-in-order")}
+    "COLLATING"? "SEQUENCE" "IS"? Alphabet-name -> Collating-sequence {cons("Collating-sequence")}
+    "THROUGH" -> Through {cons("THROUGH")}
+    "THRU" -> Through {cons("THRU")}
+    Through Procedure-name -> Through-procedure-name {cons("Through-procedure-name")}
+    "USING" File-name+ -> Using-file-names {cons("Using-file-names")}
+    "INPUT" "PROCEDURE" "IS"? Procedure-name Through-procedure-name? -> Input-procedure {cons("Input-procedure")}
+    "GIVING" File-name+ -> Giving-file-names {cons("Giving-file-names1")}
+    "OUTPUT" "PROCEDURE" "IS"? Procedure-name Through-procedure-name? -> Output-procedure {cons("Output-procedure1")}
+    Using-file-names -> Sort-statement-in {cons("Using-file-names1")}
+    Input-procedure -> Sort-statement-in {cons("Input-procedure1")}
+    Giving-file-names -> Sort-statement-out {cons("Giving-file-names2")}
+    Output-procedure -> Sort-statement-out {cons("Output-procedure2")}
+    "START" File-name Key-is-rel-op-qualified-data-name? -> Start-statement {cons("Start-statement")}
+    Equal-to -> Rel-op {cons("Equal-to")}
+    Greater-than -> Rel-op {cons("Greater-than")}
+    Greater-than-or-equal-to -> Rel-op {cons("Greater-than-or-equal-to")}
+    "KEY" "IS"? Rel-op Qualified-data-name -> Key-is-rel-op-qualified-data-name {cons("Key-is-rel-op-qualified-data-name")}
+    "STOP" Alt-run-literal -> Stop-statement {cons("Stop-statement")}
+    "RUN" -> Alt-run-literal {cons("RUN")}
+    Literal -> Alt-run-literal {cons("Literal3")}
+    "STRING" Delimited-by-phrase+ "INTO" Identifier With-pointer-identifier? -> String-statement {cons("String-statement")}
+    Literal -> Cobword-lit-size {cons("Literal4")}
+    Identifier -> Cobword-lit-size {cons("Identifier1")}
+    "SIZE" -> Cobword-lit-size {cons("SIZE")}
+    Cobword-lit+ "DELIMITED" "BY"? Cobword-lit-size -> Delimited-by-phrase {cons("Delimited-by-phrase")}
+    Subtract-statement-2 -> Subtract-statement {cons("Subtract-statement-2")}
+    Subtract-statement-1 -> Subtract-statement {cons("Subtract-statement-1")}
+    Subtract-statement-3 -> Subtract-statement {cons("Subtract-statement-3")}
+    "SUBTRACT" Cobword-lit+ "FROM" Cobword-rounded+ -> Subtract-statement-1 {cons("Subtract-statement-11")}
+    "SUBTRACT" Cobword-lit+ "FROM" Cobword-lit "GIVING" Cobword-rounded+ -> Subtract-statement-2 {cons("Subtract-statement-21")}
+    Identifier "ROUNDED"? -> Cobword-rounded {cons("Cobword-rounded")}
+    "SUBTRACT" Corresponding Identifier "FROM" Identifier "ROUNDED"? -> Subtract-statement-3 {cons("Subtract-statement-31")}
+    "CORRESPONDING" -> Corresponding {cons("CORRESPONDING")}
+    "CORR" -> Corresponding {cons("CORR")}
+    "UNSTRING" Identifier Delimited-by-all-phrase? "INTO" Unstring-statement-dst+ With-pointer-identifier? Tallying-in-identifier? -> Unstring-statement {cons("Unstring-statement")}
+    Literal -> Cobword-lit {cons("Literal5")}
+    Identifier -> Cobword-lit {cons("Identifier2")}
+    "OR" "ALL"? Cobword-lit -> Or-all-cobword-lit {cons("Or-all-cobword-lit")}
+    "DELIMITED" "BY"? "ALL"? Cobword-lit Or-all-cobword-lit* -> Delimited-by-all-phrase {cons("Delimited-by-all-phrase")}
+    "DELIMITER" "IN"? Identifier -> Delimiter-in-identifier {cons("Delimiter-in-identifier")}
+    "COUNT" "IN"? Identifier -> Count-in-identifier {cons("Count-in-identifier")}
+    Identifier Delimiter-in-identifier? Count-in-identifier? -> Unstring-statement-dst {cons("Unstring-statement-dst")}
+    "WITH"? "POINTER" Identifier -> With-pointer-identifier {cons("With-pointer-identifier")}
+    "TALLYING" "IN"? Identifier -> Tallying-in-identifier {cons("Tallying-in-identifier")}
+    "WRITE" Record-name From-identifier? Advancing-phrase? -> Write-statement {cons("Write-statement")}
+    "LINE" -> Lines {cons("LINE")}
+    "LINES" -> Lines {cons("LINES")}
+    Identifier -> Cobword-int {cons("Identifier3")}
+    Integer-number -> Cobword-int {cons("Integer1")}
+    Cobword-int Lines? -> Nr-lines-phrase {cons("Nr-lines-phrase")}
+    Nr-lines-phrase -> Page-phrase {cons("Nr-lines-phrase1")}
+    "PAGE" -> Page-phrase {cons("PAGE")}
+    "BEFORE" -> Alt-before-after {cons("BEFORE")}
+    "AFTER" -> Alt-before-after {cons("AFTER")}
+    Alt-before-after "ADVANCING"? Page-phrase -> Advancing-phrase {cons("Advancing-phrase")}
+    "FROM" Identifier -> From-identifier {cons("From-identifier")}
+    "END-OF-PAGE" -> End-of-page {cons("END-OF-PAGE")}
+    "EOP" -> End-of-page {cons("EOP")}
+    "COPY" Alt-text-name-literal In-library? "SUPPRESS"? Copy-statement-replacing-phrase? "." -> Copy-statement {cons("Copy-statement1")}
+    "OF" -> Alt-of-in {cons("OF")}
+    "IN" -> Alt-of-in {cons("IN")}
+    Library-name -> Alt-library-name-literal {cons("Library-name")}
+    Literal -> Alt-library-name-literal {cons("Literal6")}
+    Alt-of-in Alt-library-name-literal -> In-library {cons("In-library")}
+    Copy-operand "BY" Copy-operand -> Copy-statement-by-phrase {cons("Copy-statement-by-phrase")}
+    "REPLACING" Copy-statement-by-phrase+ -> Copy-statement-replacing-phrase {cons("Copy-statement-replacing-phrase")}
+    Text-name -> Alt-text-name-literal {cons("Text-name")}
+    Literal -> Alt-text-name-literal {cons("Literal7")}
+    Quoted-pseudo-text -> Copy-operand {cons("Quoted-pseudo-text")}
+    Identifier -> Copy-operand {cons("Identifier4")}
+    Literal -> Copy-operand {cons("Literal8")}
+    Use-statement-1 -> Use-statement {cons("Use-statement-1")}
+    Use-statement-2 -> Use-statement {cons("Use-statement-2")}
+    Use-statement-3 -> Use-statement {cons("Use-statement-3")}
+    "USE" "GLOBAL"? "AFTER" "STANDARD"? Alt-exception-error "PROCEDURE" "ON"? Alt-file-names-i-o -> Use-statement-1 {cons("Use-statement-11")}
+    "EXCEPTION" -> Alt-exception-error {cons("EXCEPTION")}
+    "ERROR" -> Alt-exception-error {cons("ERROR")}
+    "USE" "GLOBAL"? "AFTER" "STANDARD"? Alt-beginning-ending? Alt-file-reel-unit? "LABEL" "PROCEDURE" "ON"? Alt-file-names-i-o -> Use-statement-2 {cons("Use-statement-21")}
+    "BEGINNING" -> Alt-beginning-ending {cons("BEGINNING")}
+    "ENDING" -> Alt-beginning-ending {cons("ENDING")}
+    "FILE" -> Alt-file-reel-unit {cons("FILE")}
+    "REEL" -> Alt-file-reel-unit {cons("REEL1")}
+    "UNIT" -> Alt-file-reel-unit {cons("UNIT1")}
+    File-name+ -> File-names {cons("File-names")}
+    File-names -> Alt-file-names-i-o {cons("File-names1")}
+    "INPUT" -> Alt-file-names-i-o {cons("INPUT")}
+    "OUTPUT" -> Alt-file-names-i-o {cons("OUTPUT")}
+    "I-O" -> Alt-file-names-i-o {cons("I-O")}
+    "EXTEND" -> Alt-file-names-i-o {cons("EXTEND")}
+    "USE" "FOR"? "DEGUGGING" "ON"? Alt-procedures-all-procedures -> Use-statement-3 {cons("Use-statement-31")}
+    Procedure-name+ -> Procedure-names {cons("Procedure-names")}
+    Procedure-names -> Alt-procedures-all-procedures {cons("Procedure-names1")}
+    All-procedures -> Alt-procedures-all-procedures {cons("All-procedures")}
+    Combined-conditions -> Condition {cons("Combined-conditions")}
+    Combinable-condition -> Condition {cons("Combinable-condition")}
+    Simple-condition -> Combinable-condition {cons("Simple-condition")}
+    Negated-simple-conditions -> Combinable-condition {cons("Negated-simple-conditions")}
+    Class-condition -> Simple-condition {cons("Class-condition")}
+    Relation-condition -> Simple-condition {cons("Relation-condition")}
+    Sign-condition -> Simple-condition {cons("Sign-condition")}
+    Simple-condition-1 -> Simple-condition {cons("Simple-condition-1")}
+    Arithmetic-expression -> Simple-condition {cons("Arithmetic-expression")}
+    "(" Condition ")" -> Simple-condition-1 {cons("Simple-condition-11")}
+    Identifier Is-or-is-not Class-type -> Class-condition {cons("Class-condition1")}
+    "NUMERIC" -> Class-type {cons("NUMERIC1")}
+    "ALPHABETIC" -> Class-type {cons("ALPHABETIC1")}
+    "ALPHABETIC-LOWER" -> Class-type {cons("ALPHABETIC-LOWER")}
+    "ALPHABETIC-UPPER" -> Class-type {cons("ALPHABETIC-UPPER")}
+    Class-name -> Class-type {cons("Class-name")}
+    "DBCS" -> Class-type {cons("DBCS1")}
+    "KANJI" -> Class-type {cons("KANJI")}
+    Arithmetic-expression Relational-operator Simple-condition -> Relation-condition {cons("Relation-condition1")}
+    "IS"? Relational-operator-tail -> Relational-operator {cons("Relational-operator")}
+    "THAN" -> Than {cons("THAN")}
+    "THEN"? -> Than {cons("THEN")}
+    "GREATER" Than -> Greater {cons("Greater")}
+    "LESS" Than -> Less {cons("Less")}
+    Greater -> Relational-operator-rest {cons("Greater1")}
+    ">" -> Relational-operator-rest {cons("Relational-operator-rest-dunno-c_0")}
+    Less -> Relational-operator-rest {cons("Less1")}
+    "<" -> Relational-operator-rest {cons("Relational-operator-rest-dunno-d_0")}
+    Equal-to -> Relational-operator-rest {cons("Equal-to1")}
+    "NOT"? Relational-operator-rest -> Not-relational-operator-rest {cons("Not-relational-operator-rest")}
+    "GREATER" Than "OR" "EQUAL" "TO"? -> Greater-equal {cons("Greater-equal")}
+    "LESS" Than "OR" "EQUAL" "TO"? -> Less-equal {cons("Less-equal")}
+    Less-equal-2 -> Relational-operator-tail {cons("Less-equal-2")}
+    ">=" -> Relational-operator-tail {cons("Relational-operator-tail-dunno-e_0")}
+    Not-relational-operator-rest -> Relational-operator-tail {cons("Not-relational-operator-rest1")}
+    Greater-equal -> Relational-operator-tail {cons("Greater-equal1")}
+    Less-equal -> Relational-operator-tail {cons("Less-equal1")}
+    Arithmetic-expression Is-or-is-not Sign-type -> Sign-condition {cons("Sign-condition1")}
+    Not-is -> Is-or-is-not {cons("Not-is")}
+    Is-not -> Is-or-is-not {cons("Is-not")}
+    "POSITIVE" -> Sign-type {cons("POSITIVE")}
+    "NEGATIVE" -> Sign-type {cons("NEGATIVE")}
+    "ZERO" -> Sign-type {cons("ZERO1")}
+    "ZEROES" -> Sign-type {cons("ZEROES1")}
+    "ZEROS" -> Sign-type {cons("ZEROS1")}
+    Combinable-condition And-or-combinable-condition+ -> Combined-conditions {cons("Combined-conditions1")}
+    Alt-and-or Relational-operator? Combinable-condition -> And-or-combinable-condition {cons("And-or-combinable-condition")}
+    "NOT" Combinable-condition -> Negated-simple-conditions {cons("Negated-simple-conditions1")}
+    "AND" -> Alt-and-or {cons("AND")}
+    "OR" -> Alt-and-or {cons("OR")}
+    Paragraph-or-section-name In-section-name? -> Procedure-name {cons("Procedure-name")}
+    In Section-name -> In-section-name {cons("In-section-name")}
+    Identifier-1 -> Identifier {cons("Identifier-1")}
+    Identifier-2 -> Identifier {cons("Identifier-2")}
+    Qualified-data-name Subscript-parentheses* Reference-modification? -> Identifier-1 {cons("Identifier-11")}
+    "(" Leftmost-character-position ":" Length? ")" -> Reference-modification {cons("Reference-modification")}
+    "LINAGE-COUNTER" In-file-name? -> Identifier-2 {cons("Identifier-21")}
+    In File-name -> In-file-name {cons("In-file-name")}
+    "(" Subscript ")" -> Subscript-parentheses {cons("Subscript-parentheses")}
+    Subscript-expression+ -> Subscript {cons("Subscript")}
+    Alt-plus-minus Integer-number -> Plus-minus-integer {cons("Plus-minus-integer")}
+    Qualified-data-name Plus-minus-integer? -> Subscript-expression-ambiguous {cons("Subscript-expression-ambiguous")}
+    Literal -> Subscript-expression {cons("Literal9")}
+    Subscript-expression-ambiguous -> Subscript-expression {cons("Subscript-expression-ambiguous1")}
+    Qualified-data-name-1 -> Qualified-data-name {cons("Qualified-data-name-1")}
+    Special-register -> Qualified-data-name {cons("Special-register")}
+    Data-name In-data-or-file-name* -> Qualified-data-name-1 {cons("Qualified-data-name-11")}
+    "IN" -> In {cons("IN1")}
+    "OF" -> In {cons("OF1")}
+    In Data-or-file-name -> In-data-or-file-name {cons("In-data-or-file-name")}
+    Arithmetic-expression -> Leftmost-character-position {cons("Leftmost-character-position")}
+    Arithmetic-expression -> Length {cons("Length")}
+    Times-div Arithmetic-expression-tail* -> Arithmetic-expression {cons("Arithmetic-expression1")}
+    Alt-plus-minus Times-div -> Arithmetic-expression-tail {cons("Arithmetic-expression-tail")}
+    Power Times-div-tail* -> Times-div {cons("Times-div")}
+    "*" -> Alt-times-div {cons("Alt-times-div-dunno-e_0")}
+    "/" -> Alt-times-div {cons("Alt-times-div-dunno-f_0")}
+    Alt-times-div Power -> Times-div-tail {cons("Times-div-tail")}
+    Alt-plus-minus? Basis Power-tail* -> Power {cons("Power")}
+    "+" -> Alt-plus-minus {cons("Alt-plus-minus-dunno-g_0")}
+    "-" -> Alt-plus-minus {cons("minus")}
+    "**" Basis -> Power-tail {cons("Power-tail")}
+    Literal -> Basis {cons("Literal10")}
+    Identifier -> Basis {cons("Identifier5")}
+    Basis-1 -> Basis {cons("Basis-1")}
+    "(" Arithmetic-expression ")" -> Basis-1 {cons("Basis-11")}
+    Alphabetic-user-defined-word -> Alphabet-name {cons("Alphabet-name")}
+    Alphabetic-user-defined-word -> Class-name {cons("Class-name1")}
+    Alphabetic-user-defined-word -> Data-name {cons("Data-name2")}
+    Alphabetic-user-defined-word -> File-name {cons("File-name1")}
+    Alphabetic-user-defined-word -> Data-or-file-name {cons("Data-or-file-name")}
+    Alphabetic-user-defined-word -> Index-name {cons("Index-name")}
+    Alphabetic-user-defined-word -> Mnemonic-name {cons("Mnemonic-name")}
+    Qualified-data-name -> Record-name {cons("Record-name")}
+    Alphabetic-user-defined-word -> Symbolic-character {cons("Symbolic-character")}
+    User-defined-word -> Library-name {cons("Library-name1")}
+    User-defined-word -> Program-name {cons("Program-name")}
+    User-defined-word -> Text-name {cons("Text-name1")}
+    User-defined-word -> Paragraph-name {cons("User-defined-word")}
+    Integer-number -> Paragraph-name {cons("Integer2")}
+    User-defined-word -> Section-name {cons("User-defined-word1")}
+    Integer-number -> Section-name {cons("Integer3")}
+    User-defined-word -> Paragraph-or-section-name {cons("User-defined-word2")}
+    Integer-number -> Paragraph-or-section-name {cons("Integer4")}
+    System-name -> Computer-name {cons("Computer-name")}
+    System-name -> Environment-name {cons("Environment-name")}
+    System-name -> Assignment-name {cons("Assignment-name3")}
+    Figurative-constant-simple -> Figurative-constant {cons("Figurative-constant-simple")}
+    Figurative-constant-all -> Figurative-constant {cons("Figurative-constant-all")}
+    "ALL" Literal -> Figurative-constant-all {cons("Figurative-constant-all1")}
+    Nonnumeric -> Literal {cons("Nonnumeric")}
+    Numeric -> Literal {cons("Numeric")}
+    Figurative-constant -> Literal {cons("Figurative-constant")}
+    Special-register-1 -> Special-register {cons("Special-register-1")}
+    "DEBUG-ITEM" -> Special-register {cons("DEBUG-ITEM")}
+    Special-register-2 -> Special-register {cons("Special-register-2")}
+    "RETURN-CODE" -> Special-register {cons("RETURN-CODE")}
+    "SHIFT-OUT" -> Special-register {cons("SHIFT-OUT")}
+    "SHIFT-IN" -> Special-register {cons("SHIFT-IN")}
+    "SORT-CONTROL" -> Special-register {cons("SORT-CONTROL")}
+    "SORT-CORE-SIZE" -> Special-register {cons("SORT-CORE-SIZE")}
+    "SORT-FILE-SIZE" -> Special-register {cons("SORT-FILE-SIZE")}
+    "SORT-MESSAGE" -> Special-register {cons("SORT-MESSAGE")}
+    "SORT-MODE-SIZE" -> Special-register {cons("SORT-MODE-SIZE")}
+    "SORT-RETURN" -> Special-register {cons("SORT-RETURN")}
+    "TALLY" -> Special-register {cons("TALLY")}
+    "WHEN-COMPILED" -> Special-register {cons("WHEN-COMPILED")}
+    "ADDRESS" "OF" Data-name -> Special-register-1 {cons("Special-register-11")}
+    "LENGTH" "OF" Identifier -> Special-register-2 {cons("Special-register-21")}
+    "RECORD" -> Records {cons("RECORD2")}
+    "RECORDS" -> Records {cons("RECORDS1")}
+    "VALUE" -> Values {cons("VALUE")}
+    "VALUES" -> Values {cons("VALUES")}
+    "FOR"? "REMOVAL" -> For-removal {cons("For-removal1")}
+    "NO" "REWIND" -> No-rewind {cons("No-rewind1")}
+    "GO" "TO"? "MORE-LABELS" -> Go-to-statement-3 {cons("Go-to-statement-31")}
+    "EQUAL" "TO"? -> Equal-to-1 {cons("Equal-to-11")}
+    "NEXT" "SENTENCE" -> Next-sentence {cons("Next-sentence")}
+    "UP" -> Alt-up-down {cons("UP")}
+    "DOWN" -> Alt-up-down {cons("DOWN")}
+    "GREATER" "THAN"? -> Greater-than-1 {cons("Greater-than-1")}
+    Greater-than-1 -> Greater-than {cons("Greater-than-11")}
+    ">" -> Greater-than {cons("Greater-than-dunno-h_0")}
+    "GREATER" "THAN"? "OR" "EQUAL" "TO"? -> Greater-than-or-equal-to-1 {cons("Greater-than-or-equal-to-1")}
+    "NOT" "LESS" "THAN"? -> Greater-than-or-equal-to-2 {cons("Greater-than-or-equal-to-2")}
+    "NOT" "<" -> Greater-than-or-equal-to-3 {cons("Greater-than-or-equal-to-3")}
+    Greater-than-or-equal-to-1 -> Greater-than-or-equal-to {cons("Greater-than-or-equal-to-11")}
+    Greater-than-or-equal-to-2 -> Greater-than-or-equal-to {cons("Greater-than-or-equal-to-21")}
+    Greater-than-or-equal-to-3 -> Greater-than-or-equal-to {cons("Greater-than-or-equal-to-31")}
+    ">=" -> Greater-than-or-equal-to {cons("Greater-than-or-equal-to-dunno-i_0")}
+    "ALL" "PROCEDURES" -> All-procedures {cons("All-procedures1")}
+    "IS"? "NOT"? -> Is-not {cons("Is-not1")}
+    "NOT" "IS" -> Not-is {cons("Not-is1")}
+    "<" "=" -> Less-equal-2 {cons("Less-equal-21")}
+    "INDEXED" -> Alt-indexed-relative-sequential {cons("INDEXED")}
+    "RELATIVE" -> Alt-indexed-relative-sequential {cons("RELATIVE")}
+    "SEQUENTIAL" -> Alt-indexed-relative-sequential {cons("SEQUENTIAL1")}
+    "ACCESS" "MODE"? "IS"? Alt-sequential-random-dynamic Relative-key-clause? -> Fce-access-mode {cons("Fce-access-mode")}
+    Organization-is? Alt-indexed-relative-sequential -> Fce-organization {cons("Fce-organization")}
+    Reserve-clause -> Fce-phrase {cons("Reserve-clause1")}
+    Fce-organization -> Fce-phrase {cons("Fce-organization1")}
+    Fce-access-mode -> Fce-phrase {cons("Fce-access-mode1")}
+    Record-key-clause -> Fce-phrase {cons("Record-key-clause1")}
+    Password-clause -> Fce-phrase {cons("Password-clause1")}
+    Alternate-record-key-clause -> Fce-phrase {cons("Alternate-record-key-clause1")}
+    File-status-clause -> Fce-phrase {cons("File-status-clause1")}
+    Padding-character-clause -> Fce-phrase {cons("Padding-character-clause1")}
+    Record-delimiter-clause -> Fce-phrase {cons("Record-delimiter-clause1")}
+    "TO" -> Set-oper {cons("TO")}
+    Alt-up-down-by -> Set-oper {cons("Alt-up-down-by1")}
+    Identifier -> Set-src {cons("Identifier6")}
+    Literal -> Set-src {cons("Literal11")}
+    "TRUE" -> Set-src {cons("TRUE2")}
+    "ON" -> Set-src {cons("ON")}
+    "OFF" -> Set-src {cons("OFF")}
+    Identifier+ Set-oper Set-src -> Set-statement-phrase {cons("Set-statement-phrase")}
+    "ZERO" -> Figurative-constant-simple {cons("ZERO2")}
+    "ZEROS" -> Figurative-constant-simple {cons("ZEROS2")}
+    "ZEROES" -> Figurative-constant-simple {cons("ZEROES2")}
+    "SPACE" -> Figurative-constant-simple {cons("SPACE")}
+    "SPACES" -> Figurative-constant-simple {cons("SPACES")}
+    "HIGH-VALUE" -> Figurative-constant-simple {cons("HIGH-VALUE")}
+    "HIGH-VALUES" -> Figurative-constant-simple {cons("HIGH-VALUES")}
+    "LOW-VALUE" -> Figurative-constant-simple {cons("LOW-VALUE")}
+    "LOW-VALUES" -> Figurative-constant-simple {cons("LOW-VALUES")}
+    "QUOTE" -> Figurative-constant-simple {cons("QUOTE")}
+    "QUOTES" -> Figurative-constant-simple {cons("QUOTES")}
+    "NULL" -> Figurative-constant-simple {cons("NULL")}
+    "NULLS" -> Figurative-constant-simple {cons("NULLS")}
+    Identifier -> Inspect-by-argument {cons("Identifier7")}
+    Nonnumeric -> Inspect-by-argument {cons("Nonnumeric1")}
+    Figurative-constant-simple -> Inspect-by-argument {cons("Figurative-constant-simple1")}
+    "TO" Cobword-lit -> To-cobword-lit {cons("To-cobword-lit")}
+    Cobword -> Alphabetic-user-defined-word {cons("Alphabetic-user-defined-word")}
+    Cobword -> System-name {cons("System-name")}
+    Cobword -> User-defined-word {cons("User-defined-word3")}
+    Lex-Num -> Integer-number {cons("Integer5")}
+    Lex-Num -> Level-number {cons("Level-number")}
+    Lex-Num -> Priority-number {cons("Priority-number")}
+    Lex-Num -> Numeric {cons("Numeric1")}
+    Cobword-int "TIMES" -> Number-times {cons("Number-times")}
+    "ON"? "EXCEPTION" -> On-exception-branch {cons("On-exception-branch")}
+    "NOT" "ON"? "EXCEPTION" -> Not-on-exception-branch {cons("Not-on-exception-branch")}
+    "ON"? "SIZE" "ERROR" -> On-size-error-branch {cons("On-size-error-branch")}
+    "NOT" "ON"? "SIZE" "ERROR" -> Not-on-size-error-branch {cons("Not-on-size-error-branch")}
+    "INVALID" "KEY"? -> Invalid-key-branch {cons("Invalid-key-branch")}
+    "NOT" "INVALID" "KEY"? -> Not-invalid-key-branch {cons("Not-invalid-key-branch")}
+    "AT"? "END" -> At-end-branch {cons("At-end-branch")}
+    "NOT" "AT"? "END" -> Not-at-end-branch {cons("Not-at-end-branch")}
+    "WHEN" Evaluate-phrase When-phrase-also-phrase* -> When-branch {cons("When-branch")}
+    "WHEN" "OTHER" -> When-other-branch {cons("When-other-branch")}
+    "ON"? "OVERFLOW" -> On-overflow-branch {cons("On-overflow-branch")}
+    "NOT" "ON"? "OVERFLOW" -> Not-on-overflow-branch {cons("Not-on-overflow-branch")}
+    "AT"? End-of-page -> At-eop-branch {cons("At-eop-branch")}
+    "NOT" "AT"? End-of-page -> Not-at-eop-branch {cons("Not-at-eop-branch")}
+    "ELSE" -> Else-branch {cons("Else-branch")}
+    Accept-statement -> Primitive {cons("Accept-statement")}
+    Add-statement -> Primitive {cons("Add-statement")}
+    Alter-statement -> Primitive {cons("Alter-statement1")}
+    Call-statement -> Primitive {cons("Call-statement1")}
+    Cancel-statement -> Primitive {cons("Cancel-statement1")}
+    Close-statement -> Primitive {cons("Close-statement1")}
+    Compute-statement -> Primitive {cons("Compute-statement1")}
+    Continue-statement -> Primitive {cons("Continue-statement1")}
+    Delete-statement -> Primitive {cons("Delete-statement1")}
+    Display-statement -> Primitive {cons("Display-statement1")}
+    Divide-statement -> Primitive {cons("Divide-statement")}
+    Entry-statement -> Primitive {cons("Entry-statement1")}
+    Evaluate-statement -> Primitive {cons("Evaluate-statement1")}
+    Exit-program-statement -> Primitive {cons("Exit-program-statement1")}
+    Exit-statement -> Primitive {cons("Exit-statement1")}
+    Goback-statement -> Primitive {cons("Goback-statement1")}
+    Go-to-statement -> Primitive {cons("Go-to-statement")}
+    If-statement -> Primitive {cons("If-statement1")}
+    Initialize-statement -> Primitive {cons("Initialize-statement1")}
+    Inspect-statement -> Primitive {cons("Inspect-statement")}
+    Merge-statement -> Primitive {cons("Merge-statement1")}
+    Move-statement -> Primitive {cons("Move-statement")}
+    Multiply-statement -> Primitive {cons("Multiply-statement")}
+    Open-statement -> Primitive {cons("Open-statement1")}
+    Perform-statement -> Primitive {cons("Perform-statement1")}
+    Read-statement -> Primitive {cons("Read-statement1")}
+    Release-statement -> Primitive {cons("Release-statement1")}
+    Return-statement -> Primitive {cons("Return-statement1")}
+    Rewrite-statement -> Primitive {cons("Rewrite-statement1")}
+    Search-statement -> Primitive {cons("Search-statement")}
+    Set-statement -> Primitive {cons("Set-statement1")}
+    Sort-statement -> Primitive {cons("Sort-statement1")}
+    Start-statement -> Primitive {cons("Start-statement1")}
+    Stop-statement -> Primitive {cons("Stop-statement1")}
+    String-statement -> Primitive {cons("String-statement1")}
+    Subtract-statement -> Primitive {cons("Subtract-statement")}
+    Unstring-statement -> Primitive {cons("Unstring-statement1")}
+    Write-statement -> Primitive {cons("Write-statement1")}
+    Copy-statement -> Primitive {cons("Copy-statement2")}
+    Use-statement -> Primitive {cons("Use-statement")}
+    Next-sentence -> Primitive {cons("Next-sentence1")}
+    On-exception-branch -> Branch {cons("On-exception-branch1")}
+    Not-on-exception-branch -> Branch {cons("Not-on-exception-branch1")}
+    On-size-error-branch -> Branch {cons("On-size-error-branch1")}
+    Not-on-size-error-branch -> Branch {cons("Not-on-size-error-branch1")}
+    Invalid-key-branch -> Branch {cons("Invalid-key-branch1")}
+    Not-invalid-key-branch -> Branch {cons("Not-invalid-key-branch1")}
+    At-end-branch -> Branch {cons("At-end-branch1")}
+    Not-at-end-branch -> Branch {cons("Not-at-end-branch1")}
+    When-branch -> Branch {cons("When-branch1")}
+    When-other-branch -> Branch {cons("When-other-branch1")}
+    On-overflow-branch -> Branch {cons("On-overflow-branch1")}
+    Not-on-overflow-branch -> Branch {cons("Not-on-overflow-branch1")}
+    At-eop-branch -> Branch {cons("At-eop-branch1")}
+    Not-at-eop-branch -> Branch {cons("Not-at-eop-branch1")}
+    Else-branch -> Branch {cons("Else-branch1")}
+    "END-ADD" -> Terminator {cons("END-ADD")}
+    "END-CALL" -> Terminator {cons("END-CALL")}
+    "END-COMPUTE" -> Terminator {cons("END-COMPUTE")}
+    "END-DELETE" -> Terminator {cons("END-DELETE")}
+    "END-DIVIDE" -> Terminator {cons("END-DIVIDE")}
+    "END-EVALUATE" -> Terminator {cons("END-EVALUATE")}
+    "END-IF" -> Terminator {cons("END-IF")}
+    "END-MULTIPLY" -> Terminator {cons("END-MULTIPLY")}
+    "END-PERFORM" -> Terminator {cons("END-PERFORM")}
+    "END-READ" -> Terminator {cons("END-READ")}
+    "END-RETURN" -> Terminator {cons("END-RETURN")}
+    "END-REWRITE" -> Terminator {cons("END-REWRITE")}
+    "END-SEARCH" -> Terminator {cons("END-SEARCH")}
+    "END-START" -> Terminator {cons("END-START")}
+    "END-STRING" -> Terminator {cons("END-STRING")}
+    "END-SUBTRACT" -> Terminator {cons("END-SUBTRACT")}
+    "END-UNSTRING" -> Terminator {cons("END-UNSTRING")}
+    "END-WRITE" -> Terminator {cons("END-WRITE")}
+    "ENVIRONMENT" -> Lex-id {reject}
+    "IDENTIFICATION" -> Lex-id {reject}
+    "ID" -> Lex-id {reject}
+    "AUTHOR" -> Lex-id {reject}
+    "INSTALLATION" -> Lex-id {reject}
+    "DATE-WRITTEN" -> Lex-id {reject}
+    "DATE-COMPILED" -> Lex-id {reject}
+    "SECURITY" -> Lex-id {reject}
+    "REMARKS" -> Lex-id {reject}
+    "PROGRAM-ID" -> Lex-id {reject}
+    "INPUT-OUTPUT" -> Lex-id {reject}
+    "FILE-CONTROL" -> Lex-id {reject}
+    "ORGANIZATION" -> Lex-id {reject}
+    "RANDOM" -> Lex-id {reject}
+    "DYNAMIC" -> Lex-id {reject}
+    "SELECT" -> Lex-id {reject}
+    "OPTIONAL" -> Lex-id {reject}
+    "ASSIGN" -> Lex-id {reject}
+    "RESERVE" -> Lex-id {reject}
+    "AREAS" -> Lex-id {reject}
+    "PADDING" -> Lex-id {reject}
+    "PASSWORD" -> Lex-id {reject}
+    "ALTERNATE" -> Lex-id {reject}
+    "I-O-CONTROL" -> Lex-id {reject}
+    "EVERY" -> Lex-id {reject}
+    "MULTIPLE" -> Lex-id {reject}
+    "TAPE" -> Lex-id {reject}
+    "POSITION" -> Lex-id {reject}
+    "APPLY" -> Lex-id {reject}
+    "WRITE-ONLY" -> Lex-id {reject}
+    "RERUN" -> Lex-id {reject}
+    "SORT-MERGE" -> Lex-id {reject}
+    "SAME" -> Lex-id {reject}
+    "AREA" -> Lex-id {reject}
+    "CONFIGURATION" -> Lex-id {reject}
+    "SOURCE-COMPUTER" -> Lex-id {reject}
+    "DEBUGGING" -> Lex-id {reject}
+    "OBJECT-COMPUTER" -> Lex-id {reject}
+    "WORDS" -> Lex-id {reject}
+    "MODULES" -> Lex-id {reject}
+    "MEMORY" -> Lex-id {reject}
+    "SEGMENT-LIMIT" -> Lex-id {reject}
+    "SPECIAL-NAMES" -> Lex-id {reject}
+    "STATUS" -> Lex-id {reject}
+    "ALPHABET" -> Lex-id {reject}
+    "STANDARD-1" -> Lex-id {reject}
+    "STANDARD-2" -> Lex-id {reject}
+    "NATIVE" -> Lex-id {reject}
+    "EBCDIC" -> Lex-id {reject}
+    "SYMBOLIC" -> Lex-id {reject}
+    "ARE" -> Lex-id {reject}
+    "CLASS" -> Lex-id {reject}
+    "CURRENCY" -> Lex-id {reject}
+    "DECIMAL-POINT" -> Lex-id {reject}
+    "COMMA" -> Lex-id {reject}
+    "WORKING-STORAGE" -> Lex-id {reject}
+    "LINKAGE" -> Lex-id {reject}
+    "FD" -> Lex-id {reject}
+    "SD" -> Lex-id {reject}
+    "BLOCK" -> Lex-id {reject}
+    "CONTAINS" -> Lex-id {reject}
+    "OMITTED" -> Lex-id {reject}
+    "LINAGE" -> Lex-id {reject}
+    "FOOTING" -> Lex-id {reject}
+    "TOP" -> Lex-id {reject}
+    "BOTTOM" -> Lex-id {reject}
+    "RECORDING" -> Lex-id {reject}
+    "CODE-SET" -> Lex-id {reject}
+    "FILLER" -> Lex-id {reject}
+    "REDEFINES" -> Lex-id {reject}
+    "BLANK" -> Lex-id {reject}
+    "EXTERNAL" -> Lex-id {reject}
+    "JUSTIFIED" -> Lex-id {reject}
+    "JUST" -> Lex-id {reject}
+    "OCCURS" -> Lex-id {reject}
+    "PICTURE" -> Lex-id {reject}
+    "PIC" -> Lex-id {reject}
+    "SIGN" -> Lex-id {reject}
+    "SEPARATE" -> Lex-id {reject}
+    "CHARACTER" -> Lex-id {reject}
+    "TRAILING" -> Lex-id {reject}
+    "LEFT" -> Lex-id {reject}
+    "RIGHT" -> Lex-id {reject}
+    "SYNCHRONIZED" -> Lex-id {reject}
+    "SYNC" -> Lex-id {reject}
+    "USAGE" -> Lex-id {reject}
+    "BINARY" -> Lex-id {reject}
+    "COMP" -> Lex-id {reject}
+    "COMP-1" -> Lex-id {reject}
+    "COMP-2" -> Lex-id {reject}
+    "COMP-3" -> Lex-id {reject}
+    "COMP-4" -> Lex-id {reject}
+    "COMPUTATIONAL" -> Lex-id {reject}
+    "COMPUTATIONAL-1" -> Lex-id {reject}
+    "COMPUTATIONAL-2" -> Lex-id {reject}
+    "COMPUTATIONAL-3" -> Lex-id {reject}
+    "COMPUTATIONAL-4" -> Lex-id {reject}
+    "DISPLAY-1" -> Lex-id {reject}
+    "INDEX" -> Lex-id {reject}
+    "PACKED-DECIMAL" -> Lex-id {reject}
+    "RENAMES" -> Lex-id {reject}
+    "DIVISION" -> Lex-id {reject}
+    "DECLARATIVES" -> Lex-id {reject}
+    "SECTION" -> Lex-id {reject}
+    "ACCEPT" -> Lex-id {reject}
+    "DATE" -> Lex-id {reject}
+    "DAY" -> Lex-id {reject}
+    "DAY-OF-WEEK" -> Lex-id {reject}
+    "TIME" -> Lex-id {reject}
+    "ADD" -> Lex-id {reject}
+    "ALTER" -> Lex-id {reject}
+    "PROCEED" -> Lex-id {reject}
+    "CALL" -> Lex-id {reject}
+    "REFERENCE" -> Lex-id {reject}
+    "CONTENT" -> Lex-id {reject}
+    "CANCEL" -> Lex-id {reject}
+    "CLOSE" -> Lex-id {reject}
+    "LOCK" -> Lex-id {reject}
+    "COMPUTE" -> Lex-id {reject}
+    "CONTINUE" -> Lex-id {reject}
+    "DELETE" -> Lex-id {reject}
+    "DISPLAY" -> Lex-id {reject}
+    "UPON" -> Lex-id {reject}
+    "DIVIDE" -> Lex-id {reject}
+    "REMAINDER" -> Lex-id {reject}
+    "ENTRY" -> Lex-id {reject}
+    "EVALUATE" -> Lex-id {reject}
+    "ALSO" -> Lex-id {reject}
+    "ANY" -> Lex-id {reject}
+    "FALSE" -> Lex-id {reject}
+    "EXIT" -> Lex-id {reject}
+    "PROGRAM" -> Lex-id {reject}
+    "GOBACK" -> Lex-id {reject}
+    "DEPENDING" -> Lex-id {reject}
+    "IF" -> Lex-id {reject}
+    "INITIALIZE" -> Lex-id {reject}
+    "ALPHANUMERIC" -> Lex-id {reject}
+    "ALPHANUMERIC-EDITED" -> Lex-id {reject}
+    "NUMERIC-EDITED" -> Lex-id {reject}
+    "EGCS" -> Lex-id {reject}
+    "DATA" -> Lex-id {reject}
+    "CONVERTING" -> Lex-id {reject}
+    "INSPECT" -> Lex-id {reject}
+    "LEADING" -> Lex-id {reject}
+    "FIRST" -> Lex-id {reject}
+    "CHARACTERS" -> Lex-id {reject}
+    "INITIAL" -> Lex-id {reject}
+    "MERGE" -> Lex-id {reject}
+    "MOVE" -> Lex-id {reject}
+    "MULTIPLY" -> Lex-id {reject}
+    "OPEN" -> Lex-id {reject}
+    "REVERSED" -> Lex-id {reject}
+    "PERFORM" -> Lex-id {reject}
+    "UNTIL" -> Lex-id {reject}
+    "TEST" -> Lex-id {reject}
+    "READ" -> Lex-id {reject}
+    "RELEASE" -> Lex-id {reject}
+    "RETURN" -> Lex-id {reject}
+    "REWRITE" -> Lex-id {reject}
+    "VARYING" -> Lex-id {reject}
+    "SEARCH" -> Lex-id {reject}
+    "SET" -> Lex-id {reject}
+    "SORT" -> Lex-id {reject}
+    "ASCENDING" -> Lex-id {reject}
+    "DESCENDING" -> Lex-id {reject}
+    "DUPLICATES" -> Lex-id {reject}
+    "ORDER" -> Lex-id {reject}
+    "COLLATING" -> Lex-id {reject}
+    "SEQUENCE" -> Lex-id {reject}
+    "THROUGH" -> Lex-id {reject}
+    "THRU" -> Lex-id {reject}
+    "USING" -> Lex-id {reject}
+    "START" -> Lex-id {reject}
+    "STOP" -> Lex-id {reject}
+    "RUN" -> Lex-id {reject}
+    "STRING" -> Lex-id {reject}
+    "GIVING" -> Lex-id {reject}
+    "SUBTRACT" -> Lex-id {reject}
+    "ROUNDED" -> Lex-id {reject}
+    "CORRESPONDING" -> Lex-id {reject}
+    "CORR" -> Lex-id {reject}
+    "UNSTRING" -> Lex-id {reject}
+    "INTO" -> Lex-id {reject}
+    "DELIMITED" -> Lex-id {reject}
+    "DELIMITER" -> Lex-id {reject}
+    "COUNT" -> Lex-id {reject}
+    "WITH" -> Lex-id {reject}
+    "POINTER" -> Lex-id {reject}
+    "TALLYING" -> Lex-id {reject}
+    "WRITE" -> Lex-id {reject}
+    "LINE" -> Lex-id {reject}
+    "LINES" -> Lex-id {reject}
+    "PAGE" -> Lex-id {reject}
+    "BEFORE" -> Lex-id {reject}
+    "ADVANCING" -> Lex-id {reject}
+    "FROM" -> Lex-id {reject}
+    "END-OF-PAGE" -> Lex-id {reject}
+    "EOP" -> Lex-id {reject}
+    "COPY" -> Lex-id {reject}
+    "SUPPRESS" -> Lex-id {reject}
+    "BY" -> Lex-id {reject}
+    "REPLACING" -> Lex-id {reject}
+    "GLOBAL" -> Lex-id {reject}
+    "AFTER" -> Lex-id {reject}
+    "STANDARD" -> Lex-id {reject}
+    "LABEL" -> Lex-id {reject}
+    "PROCEDURE" -> Lex-id {reject}
+    "BEGINNING" -> Lex-id {reject}
+    "ENDING" -> Lex-id {reject}
+    "FILE" -> Lex-id {reject}
+    "REEL" -> Lex-id {reject}
+    "UNIT" -> Lex-id {reject}
+    "INPUT" -> Lex-id {reject}
+    "OUTPUT" -> Lex-id {reject}
+    "I-O" -> Lex-id {reject}
+    "EXTEND" -> Lex-id {reject}
+    "USE" -> Lex-id {reject}
+    "DEGUGGING" -> Lex-id {reject}
+    "NUMERIC" -> Lex-id {reject}
+    "ALPHABETIC" -> Lex-id {reject}
+    "ALPHABETIC-LOWER" -> Lex-id {reject}
+    "ALPHABETIC-UPPER" -> Lex-id {reject}
+    "DBCS" -> Lex-id {reject}
+    "KANJI" -> Lex-id {reject}
+    "THEN" -> Lex-id {reject}
+    "POSITIVE" -> Lex-id {reject}
+    "NEGATIVE" -> Lex-id {reject}
+    "AND" -> Lex-id {reject}
+    "LINAGE-COUNTER" -> Lex-id {reject}
+    "IN" -> Lex-id {reject}
+    "DEBUG-ITEM" -> Lex-id {reject}
+    "RETURN-CODE" -> Lex-id {reject}
+    "SHIFT-OUT" -> Lex-id {reject}
+    "SHIFT-IN" -> Lex-id {reject}
+    "SORT-CONTROL" -> Lex-id {reject}
+    "SORT-CORE-SIZE" -> Lex-id {reject}
+    "SORT-FILE-SIZE" -> Lex-id {reject}
+    "SORT-MESSAGE" -> Lex-id {reject}
+    "SORT-MODE-SIZE" -> Lex-id {reject}
+    "SORT-RETURN" -> Lex-id {reject}
+    "TALLY" -> Lex-id {reject}
+    "WHEN-COMPILED" -> Lex-id {reject}
+    "ADDRESS" -> Lex-id {reject}
+    "LENGTH" -> Lex-id {reject}
+    "OF" -> Lex-id {reject}
+    "RECORD" -> Lex-id {reject}
+    "RECORDS" -> Lex-id {reject}
+    "VALUE" -> Lex-id {reject}
+    "VALUES" -> Lex-id {reject}
+    "FOR" -> Lex-id {reject}
+    "REMOVAL" -> Lex-id {reject}
+    "NO" -> Lex-id {reject}
+    "REWIND" -> Lex-id {reject}
+    "GO" -> Lex-id {reject}
+    "MORE-LABELS" -> Lex-id {reject}
+    "NEXT" -> Lex-id {reject}
+    "SENTENCE" -> Lex-id {reject}
+    "UP" -> Lex-id {reject}
+    "DOWN" -> Lex-id {reject}
+    "GREATER" -> Lex-id {reject}
+    "OR" -> Lex-id {reject}
+    "EQUAL" -> Lex-id {reject}
+    "LESS" -> Lex-id {reject}
+    "THAN" -> Lex-id {reject}
+    "ALL" -> Lex-id {reject}
+    "PROCEDURES" -> Lex-id {reject}
+    "INDEXED" -> Lex-id {reject}
+    "RELATIVE" -> Lex-id {reject}
+    "SEQUENTIAL" -> Lex-id {reject}
+    "ACCESS" -> Lex-id {reject}
+    "MODE" -> Lex-id {reject}
+    "IS" -> Lex-id {reject}
+    "TRUE" -> Lex-id {reject}
+    "OFF" -> Lex-id {reject}
+    "ZERO" -> Lex-id {reject}
+    "ZEROS" -> Lex-id {reject}
+    "ZEROES" -> Lex-id {reject}
+    "SPACE" -> Lex-id {reject}
+    "SPACES" -> Lex-id {reject}
+    "HIGH-VALUE" -> Lex-id {reject}
+    "HIGH-VALUES" -> Lex-id {reject}
+    "LOW-VALUE" -> Lex-id {reject}
+    "LOW-VALUES" -> Lex-id {reject}
+    "QUOTE" -> Lex-id {reject}
+    "QUOTES" -> Lex-id {reject}
+    "NULL" -> Lex-id {reject}
+    "NULLS" -> Lex-id {reject}
+    "TO" -> Lex-id {reject}
+    "TIMES" -> Lex-id {reject}
+    "EXCEPTION" -> Lex-id {reject}
+    "SIZE" -> Lex-id {reject}
+    "ERROR" -> Lex-id {reject}
+    "INVALID" -> Lex-id {reject}
+    "KEY" -> Lex-id {reject}
+    "END" -> Lex-id {reject}
+    "WHEN" -> Lex-id {reject}
+    "OTHER" -> Lex-id {reject}
+    "ON" -> Lex-id {reject}
+    "OVERFLOW" -> Lex-id {reject}
+    "NOT" -> Lex-id {reject}
+    "AT" -> Lex-id {reject}
+    "ELSE" -> Lex-id {reject}
+    "END-ADD" -> Lex-id {reject}
+    "END-CALL" -> Lex-id {reject}
+    "END-COMPUTE" -> Lex-id {reject}
+    "END-DELETE" -> Lex-id {reject}
+    "END-DIVIDE" -> Lex-id {reject}
+    "END-EVALUATE" -> Lex-id {reject}
+    "END-IF" -> Lex-id {reject}
+    "END-MULTIPLY" -> Lex-id {reject}
+    "END-PERFORM" -> Lex-id {reject}
+    "END-READ" -> Lex-id {reject}
+    "END-RETURN" -> Lex-id {reject}
+    "END-REWRITE" -> Lex-id {reject}
+    "END-SEARCH" -> Lex-id {reject}
+    "END-START" -> Lex-id {reject}
+    "END-STRING" -> Lex-id {reject}
+    "END-SUBTRACT" -> Lex-id {reject}
+    "END-UNSTRING" -> Lex-id {reject}
+    "END-WRITE" -> Lex-id {reject}
+
+  lexical restrictions
+    "ENVIRONMENT" "IDENTIFICATION" "ID" "AUTHOR" "INSTALLATION" "DATE-WRITTEN" "DATE-COMPILED" "SECURITY" "REMARKS" "PROGRAM-ID" "INPUT-OUTPUT" "FILE-CONTROL" "ORGANIZATION" "RANDOM" "DYNAMIC" "SELECT" "OPTIONAL" "ASSIGN" "RESERVE" "AREAS" "PADDING" "PASSWORD" "ALTERNATE" "I-O-CONTROL" "EVERY" "MULTIPLE" "TAPE" "POSITION" "APPLY" "WRITE-ONLY" "RERUN" "SORT-MERGE" "SAME" "AREA" "CONFIGURATION" "SOURCE-COMPUTER" "DEBUGGING" "OBJECT-COMPUTER" "WORDS" "MODULES" "MEMORY" "SEGMENT-LIMIT" "SPECIAL-NAMES" "STATUS" "ALPHABET" "STANDARD-1" "STANDARD-2" "NATIVE" "EBCDIC" "SYMBOLIC" "ARE" "CLASS" "CURRENCY" "DECIMAL-POINT" "COMMA" "WORKING-STORAGE" "LINKAGE" "FD" "SD" "BLOCK" "CONTAINS" "OMITTED" "LINAGE" "FOOTING" "TOP" "BOTTOM" "RECORDING" "CODE-SET" "FILLER" "REDEFINES" "BLANK" "EXTERNAL" "JUSTIFIED" "JUST" "OCCURS" "PICTURE" "PIC" "SIGN" "SEPARATE" "CHARACTER" "TRAILING" "LEFT" "RIGHT" "SYNCHRONIZED" "SYNC" "USAGE" "BINARY" "COMP" "COMP-1" "COMP-2" "COMP-3" "COMP-4" "COMPUTATIONAL" "COMPUTATIONAL-1" "COMPUTATIONAL-2" "COMPUTATIONAL-3" "COMPUTATIONAL-4" "DISPLAY-1" "INDEX" "PACKED-DECIMAL" "RENAMES" "DIVISION" "DECLARATIVES" "SECTION" "ACCEPT" "DATE" "DAY" "DAY-OF-WEEK" "TIME" "ADD" "ALTER" "PROCEED" "CALL" "REFERENCE" "CONTENT" "CANCEL" "CLOSE" "LOCK" "COMPUTE" "CONTINUE" "DELETE" "DISPLAY" "UPON" "DIVIDE" "REMAINDER" "ENTRY" "EVALUATE" "ALSO" "ANY" "FALSE" "EXIT" "PROGRAM" "GOBACK" "DEPENDING" "IF" "INITIALIZE" "ALPHANUMERIC" "ALPHANUMERIC-EDITED" "NUMERIC-EDITED" "EGCS" "DATA" "CONVERTING" "INSPECT" "LEADING" "FIRST" "CHARACTERS" "INITIAL" "MERGE" "MOVE" "MULTIPLY" "OPEN" "REVERSED" "PERFORM" "UNTIL" "TEST" "READ" "RELEASE" "RETURN" "REWRITE" "VARYING" "SEARCH" "SET" "SORT" "ASCENDING" "DESCENDING" "DUPLICATES" "ORDER" "COLLATING" "SEQUENCE" "THROUGH" "THRU" "USING" "START" "STOP" "RUN" "STRING" "GIVING" "SUBTRACT" "ROUNDED" "CORRESPONDING" "CORR" "UNSTRING" "INTO" "DELIMITED" "DELIMITER" "COUNT" "WITH" "POINTER" "TALLYING" "WRITE" "LINE" "LINES" "PAGE" "BEFORE" "ADVANCING" "FROM" "END-OF-PAGE" "EOP" "COPY" "SUPPRESS" "BY" "REPLACING" "GLOBAL" "AFTER" "STANDARD" "LABEL" "PROCEDURE" "BEGINNING" "ENDING" "FILE" "REEL" "UNIT" "INPUT" "OUTPUT" "I-O" "EXTEND" "USE" "DEGUGGING" "NUMERIC" "ALPHABETIC" "ALPHABETIC-LOWER" "ALPHABETIC-UPPER" "DBCS" "KANJI" "THEN" "POSITIVE" "NEGATIVE" "AND" "LINAGE-COUNTER" "IN" "DEBUG-ITEM" "RETURN-CODE" "SHIFT-OUT" "SHIFT-IN" "SORT-CONTROL" "SORT-CORE-SIZE" "SORT-FILE-SIZE" "SORT-MESSAGE" "SORT-MODE-SIZE" "SORT-RETURN" "TALLY" "WHEN-COMPILED" "ADDRESS" "LENGTH" "OF" "RECORD" "RECORDS" "VALUE" "VALUES" "FOR" "REMOVAL" "NO" "REWIND" "GO" "MORE-LABELS" "NEXT" "SENTENCE" "UP" "DOWN" "GREATER" "OR" "EQUAL" "LESS" "THAN" "ALL" "PROCEDURES" "INDEXED" "RELATIVE" "SEQUENTIAL" "ACCESS" "MODE" "IS" "TRUE" "OFF" "ZERO" "ZEROS" "ZEROES" "SPACE" "SPACES" "HIGH-VALUE" "HIGH-VALUES" "LOW-VALUE" "LOW-VALUES" "QUOTE" "QUOTES" "NULL" "NULLS" "TO" "TIMES" "EXCEPTION" "SIZE" "ERROR" "INVALID" "KEY" "END" "WHEN" "OTHER" "ON" "OVERFLOW" "NOT" "AT" "ELSE" "END-ADD" "END-CALL" "END-COMPUTE" "END-DELETE" "END-DIVIDE" "END-EVALUATE" "END-IF" "END-MULTIPLY" "END-PERFORM" "END-READ" "END-RETURN" "END-REWRITE" "END-SEARCH" "END-START" "END-STRING" "END-SUBTRACT" "END-UNSTRING" "END-WRITE" -/- [A-Za-z0-9\-]

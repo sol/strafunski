@@ -1,0 +1,62 @@
+AC_INIT(configure.in)
+AM_INIT_AUTOMAKE(Sdf2Haskell,2.3)
+
+dnl Let aclocal use macros in ./config directory
+ACLOCAL="${ACLOCAL}"
+
+
+
+dnl Package switches.
+
+AC_ARG_WITH(strategylib,    
+   [  --with-strategylib=<dir>      
+                          Specify location of StrategyLib.
+			  Default: ${PWD}/../StrategyLib
+   ], 
+   strategylib=$withval, 
+   strategylib=${PWD}/../StrategyLib)
+AC_SUBST(strategylib)
+StrategyLib=${strategylib}
+AC_SUBST(StrategyLib)
+
+AC_ARG_WITH(haterm,    
+   [  --with-haterm=<dir>
+                          Specify location of Haskell ATerm Library.
+ 			  Default: ${PWD}/../ATermLib
+   ], 
+   haterm=$withval, 
+   haterm=${PWD}/../ATermLib)
+AC_SUBST(haterm)
+
+AC_REVISION($Id: configure.in,v 1.8 2005/11/02 12:57:10 jstvssr Exp $)
+
+AC_PROG_CC
+AC_PROG_INSTALL
+
+
+AC_PATH_PROGS(SH, sh)
+
+TOOLS=" "
+UNRELEASED=""
+RELEASED=""
+
+AC_SUBST(TOOLS)
+AC_SUBST(RELEASED)
+AC_SUBST(UNRELEASED)
+
+AC_OUTPUT( 
+	Makefile 
+	VERSION 
+
+	scripts/Makefile
+	generator/Makefile
+	examples/Makefile
+	examples/twosorts/Makefile
+	examples/littlelambda/Makefile
+	examples/java/Makefile
+	examples/vs-cobol-ii/Makefile
+	examples/vs-cobol-ii/testdata/Makefile
+	
+        
+
+)

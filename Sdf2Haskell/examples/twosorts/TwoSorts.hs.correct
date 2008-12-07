@@ -1,0 +1,6 @@
+module TwoSorts where
+ 
+data SortA = A1 SortA SortB
+           | A2
+ 
+data SortB = B1 SortA

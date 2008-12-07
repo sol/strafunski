@@ -1,0 +1,21 @@
+November 2005: Joost Visser
+  * Bumped to version 2.3.
+  * Upgraded to GHC 6.4.1.
+
+2004-12-21: Joost.Visser@di.uminho.pt
+	* Version number increased to 2.2.
+        * Now includes support for generating Cfg grammars for HaGLR
+	* Improved implosion support.
+
+2004-02-17: Joost.Visser@di.uminho.pt
+	* Added functionality to generate customizable pretty printers.
+	
+2003-11-18: Joost.Visser@di.uminho.pt
+	* Modified to work with latest StrategyLib (version 4.0) and with
+	  latest GHC (version 6.0.1) and latest Hugs (November 2002).
+
+2002-11-10: Ralf.Laemmel@cwi.nl
+	* Debugged, cleaned up for distribution.
+
+2002-10-19: Joost.Visser@software-improvers.com
+	* Started to make the package distributable.

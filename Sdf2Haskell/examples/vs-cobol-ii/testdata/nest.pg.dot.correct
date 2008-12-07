@@ -1,0 +1,17 @@
+digraph "A-LITTLE-NEST Perform Graph" {
+"A..C" [ shape=box ]
+"A..C" -> "MY-HANDLER"
+"A..C" -> "MY-HANDLER"
+"A..C" -> "D"
+"MY-MAIN" [ shape=box ]
+"MY-MAIN" -> "A..C"
+"MY-MAIN" -> "C"
+"MY-MAIN" -> "D"
+"C" [ shape=box ]
+"C" -> "D"
+"D" [ shape=box ]
+"D" -> "E"
+"E" [ shape=box ]
+"E" -> "MY-HANDLER"
+}
+

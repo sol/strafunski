@@ -1,0 +1,24 @@
+definition
+
+module LittleLambda
+exports
+  sorts Type Expr
+  context-free syntax
+    Identifier 					-> Type {cons("TVar")}
+    Type "->" Type				-> Type {cons("Arrow")}
+    
+    Identifier					-> Expr {cons("Var")}
+    Expr Expr					-> Expr {cons("Apply")}
+    "\\" Identifier "::" Type "->" Expr		-> Expr {cons("Lambda")}
+    
+    "let" "{" {Decl ";"}+ "}" "in" Expr		-> Expr {cons("Let")}
+    
+    Identifier "=" Expr				-> Decl {cons("Decl")}
+
+  lexical syntax
+    [\ \t\n]	-> LAYOUT
+    [A-Za-z][A-Za-z0-9] -> Identifier
+  context-free restrictions
+    LAYOUT? -/- [\ \t\n]
+    Identifier -/- [A-Za-z0-9]
+    
