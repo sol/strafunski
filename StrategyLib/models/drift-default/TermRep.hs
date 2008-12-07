@@ -60,8 +60,10 @@ implode (TermRep (x,_,_)) = fromJust $ fromDynamic x
 getChildren (TermRep (_,ks,_))   = ks
 getConstr   (TermRep (_,_ ,c))   = \ks -> TermRep (c ks,ks,c)
 getTypeRep t                     = typeOf t
-hasTypeOf (TermRep (dx,_,_)) (x::t)
-  = ((fromDynamic dx)::Maybe t)
+
+hasTypeOf :: (Typeable t) => TermRep -> t -> Maybe t
+hasTypeOf (TermRep (dx,_,_)) x = fromDynamic dx
+
 
 --- Instances for basic types and basic type constructors --------------------
 
