@@ -1,0 +1,28 @@
+These are sources that I release with my PPDP 2009 invited talk.
+Please understand that this is *illustrative* code.
+I have merely sketched certain aspects.
+It is really just illustration for a talk!
+It may be useful though.
+
+Here is quick inventory of this file system:
+
+shared: basic lib functionality used by several "experiments"
+ * holp: higher-order logic programming convenience
+ * syb: very little to be shared of SYB among experiments
+ * lists: (mainly higher-order) list processing
+ * meta: metaprogramming convenience
+ * vars: operations on lists/sets of logical/nonground variables
+ * msft: test data
+
+experiments: experiments or illustrations used in the talk
+ * basic: the most basic SYB experiment
+ * backtracking: illustration of backtracking traversal
+ * nonground: illustration of traversal of nonground terms
+ * bidirectional: crazy inquiry into multi-mode traversal
+ * optimized: a generative and optimized model of SYB
+
+All the experiments consist of two parts:
+ * lib: all library (generic) functionality
+ * app: specific illustrations (using msft typically)
+
+
