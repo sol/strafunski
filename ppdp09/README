@@ -9,6 +9,8 @@ It may be useful though.
 
 Here is quick inventory of this file system:
 
+pdf: Slides and paper of the underlying talk
+
 shared: basic lib functionality used by several "experiments"
  * holp: higher-order logic programming convenience
  * syb: very little to be shared of SYB among experiments
