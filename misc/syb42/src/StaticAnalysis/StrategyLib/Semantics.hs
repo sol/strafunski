@@ -19,7 +19,7 @@ type Meaning = Term -> Maybe Term
 
 -- Compositional semantics
 
-interpret :: TP Meaning -> Meaning
+interpret :: T Meaning -> Meaning
 interpret Id            = Just
 interpret Fail          = const Nothing
 interpret (Seq s s')    = maybe Nothing (interpret s') . interpret s

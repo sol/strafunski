@@ -25,10 +25,10 @@ type Abs = Map Sort Cases
 
 -- The actual analysis
 
-analyse :: Signature -> TP Abs -> Abs
+analyse :: Signature -> T Abs -> Abs
 analyse sig = analyse' 
  where
-  analyse' :: TP Abs -> Abs
+  analyse' :: T Abs -> Abs
   analyse' Id            = bottom
   analyse' Fail          = bottom
   analyse' (Seq s s')    = analyse' s `lub` analyse' s'

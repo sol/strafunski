@@ -22,13 +22,13 @@ type Abs = TRel -> Maybe TRel
 
 -- Entrance point for termination checking
 
-typeOf :: TP (SRel,Bool) -> Maybe SRel
+typeOf :: T (SRel,Bool) -> Maybe SRel
 typeOf s = analyse s Leq
 
 
 -- Symbolic execution of strategies to compute relation on measure
 
-analyse :: TP (SRel,Bool) -> Abs
+analyse :: T (SRel,Bool) -> Abs
 
 analyse Id = Just
 analyse Fail = Just

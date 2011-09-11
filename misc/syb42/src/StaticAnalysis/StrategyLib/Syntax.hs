@@ -5,15 +5,15 @@ import Prelude hiding (repeat)
 
 -- Substitution-enabled type-preserving strategies
 
-data TP x
+data T x
  = Id
  | Fail
- | Seq (TP x) (TP x)
- | Choice (TP x) (TP x)
+ | Seq (T x) (T x)
+ | Choice (T x) (T x)
  | Var x
- | Rec (x -> TP x)
- | All (TP x)
- | One (TP x)
+ | Rec (x -> T x)
+ | All (T x)
+ | One (T x)
 
 full_bu s   = Rec (\x -> Seq (All (Var x)) s)
 full_td s   = Rec (\x -> Seq s (All (Var x)))

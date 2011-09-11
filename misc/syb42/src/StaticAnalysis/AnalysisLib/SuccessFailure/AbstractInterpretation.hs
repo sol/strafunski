@@ -10,7 +10,7 @@ import AnalysisLib.SuccessFailure.Sf
 
 -- The actual analysis
 
-analyse :: TP Sf -> Sf
+analyse :: T Sf -> Sf
 analyse Id            = ForallSuccess
 analyse Fail          = ExistsFailure
 analyse (Seq s s')    = analyse s `seq` analyse s'
@@ -23,7 +23,7 @@ analyse (One s)       = ExistsFailure
 
 -- Tests
 
-data Test = Full_bu | Full_td | Once_bu | Once_td | Stop_bu | Stop_td | Innermost
+data Test = Full_bu | Full_td | Once_bu | Once_td | Stop_td | Innermost
  deriving (Show)
 
 test :: Test -> IO ()
@@ -34,7 +34,6 @@ test t
       Full_td   -> full_td
       Once_bu   -> once_bu
       Once_td   -> once_td
-      Stop_bu   -> stop_bu
       Stop_td   -> stop_td
       Innermost -> innermost)
  where
@@ -55,6 +54,5 @@ main = do
  test Full_td
  test Once_bu
  test Once_td
- test Stop_bu
  test Stop_td
  test Innermost

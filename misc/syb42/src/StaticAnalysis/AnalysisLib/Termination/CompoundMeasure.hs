@@ -96,12 +96,12 @@ generate rs = generate' (lesss' rs)
 
 -- Entrance point for termination checking
 
-typeOf :: TP ([Rel],Bool) -> Measure -> Maybe [Rel]
+typeOf :: T ([Rel],Bool) -> Measure -> Maybe [Rel]
 typeOf s m = analysis s (leqs m)
 
 -- Symbolic execution of strategies to compute relation on measure
 
-analysis :: TP ([Rel],Bool) -> Abs
+analysis :: T ([Rel],Bool) -> Abs
 analysis Id = Just
 analysis Fail = Just
 analysis (Seq s s') = maybe Nothing (analysis s') . analysis s
