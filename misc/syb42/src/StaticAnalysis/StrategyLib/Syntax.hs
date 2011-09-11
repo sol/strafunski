@@ -19,7 +19,6 @@ full_bu s   = Rec (\x -> Seq (All (Var x)) s)
 full_td s   = Rec (\x -> Seq s (All (Var x)))
 once_bu s   = Rec (\x -> Choice (One (Var x)) s)
 once_td s   = Rec (\x -> Choice s (One (Var x)))
-stop_bu s   = Rec (\x -> Choice (All (Var x)) s)
 stop_td s   = Rec (\x -> Choice s (All (Var x)))
 innermost s = repeat (once_bu s)
 try s       = Choice s Id

@@ -1,12 +1,12 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
-module Examaples.Company.HList where
+module Examaples.Company.Typecase where
 
 import Data.Tree
 import Data.HList.HListPrelude hiding (Id)
 import StrategyLib.Baseline
-import StrategyLib.HList
+import StrategyLib.Typecase
 import Examples.Company.Types
 
 
@@ -27,3 +27,6 @@ increase_all_salaries_with_distinction = getId . full_td' hlist
   hlist = HCons (Id . f) (HCons (Id . g) HNil)
   f (Employee n s) = Employee n (s+1)
   g (Manager (Employee n s)) = Manager (Employee n (s+1)) 
+
+main = do print ()
+

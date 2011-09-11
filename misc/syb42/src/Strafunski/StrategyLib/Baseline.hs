@@ -9,7 +9,6 @@ module StrategyLib.Baseline (
  once_td,
  once_bu,
  stop_td,
- stop_bu,
  innermost,
  repeat,
  try,
@@ -30,39 +29,37 @@ instance Monad Id
   return = Id
   x >>= f = f (getId x)
 
-full_td   :: Monad m     => TP m -> TP m
-full_bu   :: Monad m     => TP m -> TP m
-once_td   :: MonadPlus m => TP m -> TP m
-once_bu   :: MonadPlus m => TP m -> TP m
-stop_td   :: MonadPlus m => TP m -> TP m
-stop_bu   :: MonadPlus m => TP m -> TP m
-innermost :: MonadPlus m => TP m -> TP m
-repeat    :: MonadPlus m => TP m -> TP m
-try       :: MonadPlus m => TP m -> TP m
+full_td   :: Monad m     => T m -> T m
+full_bu   :: Monad m     => T m -> T m
+once_td   :: MonadPlus m => T m -> T m
+once_bu   :: MonadPlus m => T m -> T m
+stop_td   :: MonadPlus m => T m -> T m
+innermost :: MonadPlus m => T m -> T m
+repeat    :: MonadPlus m => T m -> T m
+try       :: MonadPlus m => T m -> T m
 
-full_td s   = s `sequTP` allTP (full_td s)
-full_bu s   = allTP (full_bu s) `sequTP` s
-once_td s   = s `choiceTP` oneTP (once_td s)
-once_bu s   = oneTP (once_bu s) `choiceTP` s
-stop_td s   = s `choiceTP` allTP (stop_td s)
-stop_bu s   = allTP (stop_bu s) `choiceTP` s
+full_td s   = s `sequT` allT (full_td s)
+full_bu s   = allT (full_bu s) `sequT` s
+once_td s   = s `choiceT` oneT (once_td s)
+once_bu s   = oneT (once_bu s) `choiceT` s
+stop_td s   = s `choiceT` allT (stop_td s)
 innermost s = repeat (once_bu s)
-repeat s    = try (s `sequTP` repeat s)
-try s       = s `choiceTP` idTP
+repeat s    = try (s `sequT` repeat s)
+try s       = s `choiceT` idT
 
 -- Query each node and collect all results in a list
-full_cl :: Monoid u => TU u -> TU u
+full_cl :: Monoid u => Q u -> Q u
 full_cl s = mconcat
           . uncurry (:)
-          . bothTU s (allTU (full_cl s))
+          . bothQ s (allQ (full_cl s))
 
 -- Collection with stop
-stop_cl :: Monoid u => TU (Maybe u) -> TU u
+stop_cl :: Monoid u => Q (Maybe u) -> Q u
 stop_cl s = maybe mempty id
-          . (s `choiceTU` ( Just
-                          . mconcat
-                          . allTU (stop_cl s)))
+          . (s `choiceQ` ( Just
+                         . mconcat
+                         . allQ (stop_cl s)))
 
 -- Find a node to query in top-down, left-to-right manner
-once_cl :: MonadPlus m => TU (m u) -> TU (m u)
-once_cl s = s `choiceTU` ( msum . allTU (once_cl s))
+once_cl :: MonadPlus m => Q (m u) -> Q (m u)
+once_cl s = s `choiceQ` (msum . allQ (once_cl s))

@@ -1,6 +1,6 @@
 {-# LANGUAGE Rank2Types #-}
 
-module StrategyLib.LessGenericity where
+module StrategyLib.Default where
 
 import Data.Data
 import Control.Monad
@@ -13,9 +13,9 @@ once_bu'   :: (Data x, Data y, MonadPlus m) => (x -> m x) -> y -> m y
 stop_td'   :: (Data x, Data y, MonadPlus m) => (x -> m x) -> y -> m y
 innermost' :: (Data x, Data y, MonadPlus m) => (x -> m x) -> y -> m y
 
-full_td' s     = full_td (adhocTP idTP s)
-full_bu' s     = full_bu (adhocTP idTP s)
-once_td' s     = once_td (adhocTP failTP s)
-once_bu' s     = once_bu (adhocTP failTP s)
-stop_td' s     = stop_td (adhocTP failTP s)
-innermost' s   = innermost (adhocTP failTP s)
+full_td' f     = full_td (adhocT idT f)
+full_bu' f     = full_bu (adhocT idT f)
+once_td' f     = once_td (adhocT failT f)
+once_bu' f     = once_bu (adhocT failT f)
+stop_td' f     = stop_td (adhocT failT f)
+innermost' f   = innermost (adhocT failT f)

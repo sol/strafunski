@@ -5,7 +5,7 @@ module StrategyLib.Reachability where
 
 import Data.Data
 import StrategyLib.Baseline
-import StrategyLib.LessGenericity
+import StrategyLib.Default
 
 
 -- The type-level for reachability

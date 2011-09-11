@@ -3,65 +3,69 @@
 
 -- A simple model of Strafunksi-like strategies.
 -- We simply redirect to SYB for extension and traversal.
--- The TU type is done differently from the original presentation.
--- That is, we don't hardwire the monad TC into the TU synonym.
+-- The Q type is done differently from the original presentation.
+-- That is, we don't hardwire the monad TC into the Q synonym.
 
 module StrategyLib.StrategyPrimitives (
- TP,
- TU,
- idTP,
- failTP,
- failTU,
- constTU,
- sequTP,
- bothTU,
- choiceTP,
- choiceTU,
- allTP,
- oneTP,
- allTU,
- adhocTP,
- adhocTU
+ T,
+ Q,
+ idT,
+ failT,
+ failQ,
+ constQ,
+ sequT,
+ bothQ,
+ choiceT,
+ choiceQ,
+ allT,
+ oneT,
+ allQ,
+ adhocT,
+ adhocQ
 ) where
 
 import Control.Monad
-import Data.Generics
+import Data.Generics hiding (choiceQ)
 
--- Type-preserving and -unifying strategies
-type TP m = forall x. Data x => x -> m x
-type TU r = forall x. Data x => x -> r
+-- Transformations
 
--- Basis combinators
-idTP     :: Monad m      => TP m
-failTP   :: MonadPlus m  => TP m
-failTU   :: MonadPlus m  => TU (m r)
-constTU  ::                 r -> TU r
-sequTP   :: Monad m      => TP m -> TP m -> TP m
-bothTU   ::                 TU u -> TU u' -> TU (u,u')
-choiceTP :: MonadPlus m  => TP m -> TP m -> TP m
-choiceTU :: MonadPlus m  => TU (m r) -> TU (m r) -> TU (m r)
+type T m = forall x. Data x => x -> m x
 
--- One-layer traversal combinators
-allTP    :: Monad m           => TP m -> TP m
-oneTP    :: MonadPlus m       => TP m -> TP m
-allTU    ::                      TU r -> TU [r]
+-- Transformation combinators
 
--- Strategy extension
-adhocTP  :: (Typeable x, Monad m) => TP m -> (x -> m x) -> TP m
-adhocTU  :: Typeable x            => TU r -> (x -> r) -> TU r
+idT :: Monad m => T m
+failT :: MonadPlus m  => T m
+sequT :: Monad m => T m -> T m -> T m
+choiceT :: MonadPlus m  => T m -> T m -> T m
+allT :: Monad m => T m -> T m
+oneT :: MonadPlus m => T m -> T m
+adhocT :: (Typeable x, Monad m) => T m -> (x -> m x) -> T m
+
+idT = return
+failT = const mzero
+sequT f g x = f x >>= g
+choiceT f g x = f x `mplus` g x
+allT f = gmapM f
+oneT f = gmapMo f
+adhocT s f = s `extM` f
 
 
--- Implementations
-idTP     = return
-failTP   = const mzero
-failTU   = const mzero
-constTU  = \r -> const r
-sequTP   = \f g x -> f x >>= g
-bothTU   = \f g x -> (f x, g x)
-choiceTP = \f g x -> f x `mplus` g x
-choiceTU = \f g x -> f x `mplus` g x
-allTP    = \f -> gmapM f
-oneTP    = \f -> gmapMo f
-allTU    = \f -> gmapQ f
-adhocTP  = \g s -> g `extM` s
-adhocTU  = \g s -> g `extQ` s
+-- Queries
+
+type Q r = forall x. Data x => x -> r
+
+-- Query combinators
+
+constQ :: r -> Q r
+failQ :: MonadPlus m  => Q (m r)
+bothQ :: Q u -> Q u' -> Q (u,u')
+choiceQ :: MonadPlus m  => Q (m r) -> Q (m r) -> Q (m r)
+allQ :: Q r -> Q [r]
+adhocQ :: Typeable x => Q r -> (x -> r) -> Q r
+
+constQ r = const r
+failQ = const mzero
+bothQ f g x = (f x, g x)
+choiceQ f g x = f x `mplus` g x
+allQ f = gmapQ f
+adhocQ s f = s `extQ` f
