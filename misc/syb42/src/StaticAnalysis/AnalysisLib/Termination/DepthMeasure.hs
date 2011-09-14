@@ -31,7 +31,7 @@ typeOf s = analyse s Leq
 analyse :: T (SRel,Bool) -> Abs
 
 analyse Id = Just
-analyse Fail = Just
+analyse Fail = const (Just Less)
 
 analyse (Seq s s')
  = maybe Nothing (analyse s') . analyse s

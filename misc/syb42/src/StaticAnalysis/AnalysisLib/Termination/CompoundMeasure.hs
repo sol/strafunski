@@ -103,7 +103,7 @@ typeOf s m = analysis s (leqs m)
 
 analysis :: T ([Rel],Bool) -> Abs
 analysis Id = Just
-analysis Fail = Just
+analysis Fail = Just . lesss'
 analysis (Seq s s') = maybe Nothing (analysis s') . analysis s
 
 analysis (Choice s s')
